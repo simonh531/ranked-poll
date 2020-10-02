@@ -7,16 +7,31 @@
     "start": "next start"
   },
   "dependencies": {
-    "@apollo/client": "^3.0.2",
+    "@apollo/client": "^3.2.1",
     "@hapi/iron": "6.0.0",
-    "apollo-server-micro": "^2.14.2",
+    "apollo-datasource": "^0.7.2",
+    "apollo-server-micro": "^2.18.1",
     "cookie": "^0.4.1",
-    "graphql": "^14.0.2",
+    "graphql": "^15.3.0",
+    "graphql-tools": "^6.2.3",
     "next": "latest",
+    "next-auth": "^3.1.0",
+    "pg": "^8.3.3",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "uuid": "8.1.0"
+    "shortid": "^2.2.15",
+    "styled-components": "^5.2.0",
+    "uuid": "^8.3.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "babel-plugin-styled-components": "^1.11.1",
+    "eslint": "^7.9.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.21.1",
+    "eslint-plugin-react-hooks": "^4.1.2"
+  }
 }
