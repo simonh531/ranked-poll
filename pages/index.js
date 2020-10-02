@@ -6,6 +6,8 @@ import styled from 'styled-components';
 
 import PollOption from '../components/pollOption';
 
+import { Card, Description } from '../style/card';
+
 const Main = styled.main`
   min-height: calc(100vh - 40px);
   background-color: ${(props) => props.backgroundColor};
@@ -27,16 +29,6 @@ const Why = styled.a`
   font-size: 0.9em;
 `;
 
-const Card = styled.div`
-  margin-top: 20px;
-  width: 60%;
-  padding: 20px;
-  min-width: 320px;
-  background-color: white;
-  border-radius: 2px;
-  box-shadow: 0 0 2px 2px rgba(0,0,0,0.1);
-`;
-
 const Question = styled.input`
   font-family: Merriweather, serif;
   border: 0;
@@ -50,15 +42,9 @@ const Question = styled.input`
   }
 `;
 
-const Description = styled.div`
-  position: relative;
-  font-family: Open Sans, sans-serif;
-  width: 100%;
-  min-height: 2em;
-  padding: 4px;
+const DescriptionBox = styled(Description)`
   padding-bottom: 1.4em;
-  color: grey;
-  white-space: pre;
+  color: transparent;
 `;
 
 const DescriptionTextarea = styled.textarea`
@@ -71,7 +57,6 @@ const DescriptionTextarea = styled.textarea`
   left: 0;
   overflow: hidden;
   resize: none;
-  opacity: 0.3;
 `;
 
 const CREATE_POLL = gql`
@@ -111,10 +96,10 @@ const Index = () => {
           <Question type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter your question" />
         </div>
         <div>
-          <Description>
+          <DescriptionBox>
             {description || 'Enter any clarifying details. Feel free to leave blank'}
             <DescriptionTextarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter any clarifying details. Feel free to leave blank" />
-          </Description>
+          </DescriptionBox>
         </div>
         <div>
           {Object.entries(options).map(([id, pollOption]) => {
@@ -161,7 +146,7 @@ const Index = () => {
               },
             },
           })}
-          disabled={!title || !description || Object.values(options).join('') === ''}
+          disabled={!title || Object.values(options).join('') === ''}
         >
           Submit
         </button>
