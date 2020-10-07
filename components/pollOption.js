@@ -48,39 +48,75 @@ const Icon = styled.span`
   pointer-events: ${(props) => (props.invisible ? 'none' : 'auto')};
 `;
 
+const GraphContainer = styled.div`
+  display: flex;
+  height: 2em;
+  align-items: center;
+`;
+
+const BarPercent = styled.div`
+  width: 7ch;
+  padding-right: 1ch;
+  font-family: Open Sans, sans-serif;
+  text-align: right;
+`;
+
+const BarContainer = styled.div`
+  flex: 1;
+  height: 100%;
+`;
+
+const Bar = styled.div`
+  background-color: skyblue;
+  width: ${(props) => props.percent};
+  height: 100%;
+  box-shadow: 0 0 2px 2px rgba(0,0,0,0.5);
+`;
+
 const PollOption = ({
   name, value, onChange, upClick, downClick, onCancel, lastOne, boxClick = () => {}, rank, disabled,
+  percent,
 }) => (
-  <Container>
-    {rank ? <Rank>{rank}</Rank> : (
-      <Box className="material-icons" active={!onChange} onClick={boxClick} disabled={disabled}>
-        check_box_outline_blank
-      </Box>
-    )}
-    {onChange
-      ? <Input type="text" placeholder="Enter an answer" value={value} onChange={onChange} />
-      : <Name>{name}</Name>}
-    <Toolbar>
-      {onChange && !lastOne ? (
-        <Icon className="material-icons" onClick={onCancel}>
-          close
-        </Icon>
-      ) : null}
-      {rank ? (
-        <>
-          <Icon className="material-icons" onClick={upClick} invisible={rank === 1 || disabled}>
-            arrow_upward
-          </Icon>
-          <Icon className="material-icons" onClick={downClick} invisible={lastOne || disabled}>
-            arrow_downward
-          </Icon>
-          <Icon className="material-icons" onClick={onCancel} invisible={disabled}>
+  <div>
+    <Container>
+      {rank ? <Rank>{rank}</Rank> : (
+        <Box className="material-icons" active={!onChange} onClick={boxClick} disabled={disabled}>
+          check_box_outline_blank
+        </Box>
+      )}
+      {onChange
+        ? <Input type="text" placeholder="Enter an answer" value={value} onChange={onChange} />
+        : <Name>{name}</Name>}
+      <Toolbar>
+        {onChange && !lastOne ? (
+          <Icon className="material-icons" onClick={onCancel}>
             close
           </Icon>
-        </>
-      ) : null}
-    </Toolbar>
-  </Container>
+        ) : null}
+        {rank ? (
+          <>
+            <Icon className="material-icons" onClick={upClick} invisible={rank === 1 || disabled}>
+              arrow_upward
+            </Icon>
+            <Icon className="material-icons" onClick={downClick} invisible={lastOne || disabled}>
+              arrow_downward
+            </Icon>
+            <Icon className="material-icons" onClick={onCancel} invisible={disabled}>
+              close
+            </Icon>
+          </>
+        ) : null}
+      </Toolbar>
+    </Container>
+    {percent ? (
+      <GraphContainer>
+        <BarPercent>{percent}</BarPercent>
+        <BarContainer>
+          <Bar percent={percent} />
+        </BarContainer>
+      </GraphContainer>
+    ) : null}
+  </div>
 );
 
 export default PollOption;

@@ -36,7 +36,7 @@ export default class PostgresDB extends DataSource {
 
   async getPoll(id) {
     if (id) {
-      const text = 'SELECT * FROM poll WHERE id = $1';
+      const text = 'SELECT poll.*, count(vote) FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
       const values = [id];
       try {
         const res = await this.pool.query(text, values);

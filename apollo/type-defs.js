@@ -47,6 +47,7 @@ export default gql`
     createdAt: String!
     deletedAt: String
     editedAt: String
+    count: Int!
   }
 
   type VoteData {

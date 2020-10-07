@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -21,7 +21,7 @@ const Main = styled.main`
 const Question = styled.h1`
   font-family: Merriweather, serif;
   border-bottom: 1px solid black;
-  margin-bottom: 8px;
+  margin: 8px 0;
   width: 100%;
   padding: 4px;
 `;
@@ -37,7 +37,9 @@ const CardBottom = styled.div`
 `;
 
 const CardBottomRight = styled.div`
+  flex: 1;
   display: flex;
+  justify-content: flex-end;
 `;
 
 const Winner = styled.div`
@@ -74,8 +76,32 @@ const PairTable = styled.table`
   margin: 8px;
 `;
 
+const PairSpacing = styled.tr`
+  height: 1em;
+`;
+
 const PairBox = styled.td`
   font-weight: ${(props) => (props.winner ? '600' : '400')};
+`;
+
+const TotalVotes = styled.div`
+  font-family: Open Sans, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SubmitButton = styled.button`
+  margin-right: 1ch;
+  font-family: Open Sans, sans-serif;
+`;
+
+const VoteSubmitted = styled.div`
+  margin-right: 1ch;
+  font-family: Open Sans, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const POLL = gql`
@@ -84,6 +110,7 @@ const POLL = gql`
       title
       description
       options
+      count
     }
   }
 `;
@@ -124,118 +151,103 @@ const Section = ({ children, title, headerSize }) => {
   );
 };
 
-const Results = ({ options, data }) => {
-  const pairs = {};
-  data.pollResult.forEach((datum) => {
-    const optionsCopy = [...options];
-    // out here so that the first option doesn't come back in
-    datum.vote.forEach((pair1, index) => {
-      const pair1Index = options.indexOf(pair1);
-      if (pair1Index !== -1) {
-        // preference exists in options
-        optionsCopy.splice(optionsCopy.indexOf(pair1), 1);
-        const unrankedOptions = [...optionsCopy];
+const getKey = (pair1, pair2) => [pair1.replaceAll('/', '\\/'), pair2.replaceAll('/', '\\/')].sort().join('/');
 
-        const tally = (pair2, pair2Index) => {
-          const pair1String = pair1.replaceAll('/', '\\/');
-          const pair2String = pair2.replaceAll('/', '\\/');
-          let key;
-          if (pair1Index < pair2Index) {
-            key = `${pair1String}/${pair2String}`;
-          } else if (pair1Index > pair2Index) {
-            key = `${pair2String}/${pair1String}`;
-          }
-          if (!pairs[key]) {
-            pairs[key] = {
-              [pair1]: datum.count,
-              [pair2]: 0,
-            };
-          } else {
-            pairs[key] = {
-              ...pairs[key],
-              [pair1]: pairs[key][pair1] + datum.count,
-            };
-          }
-        };
-
-        const lowerPlaces = datum.vote.filter((_, pair2Index) => pair2Index > index);
-        lowerPlaces.forEach((pair2) => {
-          const pair2Index = options.indexOf(pair2);
-          if (pair2Index !== -1) {
-            unrankedOptions.splice(unrankedOptions.indexOf(pair2), 1);
-            tally(pair2, pair2Index);
-          }
-        });
-        unrankedOptions.forEach((pair2) => {
-          const pair2Index = options.indexOf(pair2);
-          tally(pair2, pair2Index);
-        });
-      }
-    });
-  });
-  const wins = {};
-  Object.values(pairs).forEach((pair) => {
-    const option = Object.keys(pair);
-    if (pair[option[0]] > pair[option[1]]) {
-      if (!wins[option[0]]) {
-        wins[option[0]] = 1;
-      } else {
-        wins[option[0]] += 1;
-      }
-    } else if (pair[option[0]] < pair[option[1]]) {
-      if (!wins[option[1]]) {
-        wins[option[1]] = 1;
-      } else {
-        wins[option[1]] += 1;
-      }
-    }
-  });
-  const winner = Object.entries(wins).find(([_, winCount]) => winCount === options.length - 1);
-  const dominatingSet = [];
-  if (!winner) {
-    let highestWins = 0;
-    let tempSet = [];
-    Object.entries(wins).forEach(([option, winCount]) => {
-      if (winCount > highestWins) {
-        highestWins = winCount;
-        tempSet = [option];
-      } else if (winCount === highestWins) {
-        tempSet.push(option);
-      }
-    });
-    dominatingSet.push(...tempSet);
+const isSourceAfterRemove = (array1, array2) => array1.reduce((value, name) => {
+  if (value === false) {
+    return false;
   }
-  return (
-    <div>
-      <Winner>
-        <div>
-          {winner ? `Condorcet Winner: ${winner[0]}` : 'No Condorcet Winner'}
-        </div>
-        <div>
-          {dominatingSet.length ? `Dominating Set: ${dominatingSet.join(', ')}` : null}
-        </div>
-      </Winner>
-      <Section title="Advanced" headerSize="1.4">
-        <Section title="Votes" headerSize="1.2">
-          <table>
-            <thead>
-              <tr>
-                <th>Count</th>
-                <PreferenceHeader>Preferences</PreferenceHeader>
+  return array2.includes(name);
+}, true);
+
+const getAllAbove = (name, nodes, _) => {
+  let set = _;
+  if (!set) {
+    set = new Set();
+  }
+  set.add(name);
+  nodes[name].above.forEach((nodeName) => getAllAbove(nodeName, nodes, set));
+  return [...set];
+};
+
+const getAllBelow = (name, nodes, _) => {
+  let set = _;
+  if (!set) {
+    set = new Set();
+  }
+  set.add(name);
+  nodes[name].below.forEach((nodeName) => getAllBelow(nodeName, nodes, set));
+  return [...set];
+};
+
+const addNodeToTree = (winner, loser, nodes) => {
+  if (!getAllAbove(winner, nodes).reduce((value, name) => {
+    // nodes above the winner being below the loser causes a cycle
+    // winner goes above the loser so the link creates a loop
+    if (value === true) {
+      return true;
+    }
+    return getAllBelow(loser, nodes).includes(name);
+  }, false)) {
+    nodes[loser].above.push(winner);
+    nodes[winner].below.push(loser);
+    return true;
+  }
+  return false;
+};
+
+// class RankedNode {
+//   constructor(name) {
+//     this.name = name;
+//     this.above = [];
+//     this.below = [];
+
+//     this.getAllAbove = (_) => {
+//       let set = _;
+//       if (!set) {
+//         set = new Set();
+//       }
+//       set.add(this.name);
+//       this.above.forEach((node) => node.getAllAbove(set));
+//       return [...set];
+//     };
+
+//     this.getAllBelow = (_) => {
+//       let set = _;
+//       if (!set) {
+//         set = new Set();
+//       }
+//       set.add(this.name);
+//       this.below.forEach((node) => node.getAllBelow(set));
+//       return [...set];
+//     };
+//   }
+// }
+
+const Results = ({ pairs, votes }) => (
+  <div>
+    <Section title="Advanced" headerSize="1.4">
+      <Section title="Votes" headerSize="1.2">
+        <table>
+          <thead>
+            <tr>
+              <th>Count</th>
+              <PreferenceHeader>Preferences</PreferenceHeader>
+            </tr>
+          </thead>
+          <tbody>
+            {votes.map((datum) => (
+              <tr key={datum.vote}>
+                <TableNumber>{datum.count}</TableNumber>
+                <td>{datum.vote.join(' > ')}</td>
               </tr>
-            </thead>
-            <tbody>
-              {data.pollResult.map((datum) => (
-                <tr key={datum.vote}>
-                  <TableNumber>{datum.count}</TableNumber>
-                  <td>{datum.vote.join(', ')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Section>
-        <Section title="Pairs" headerSize="1.2">
-          {Object.entries(pairs).map(([key, pairData]) => {
+            ))}
+          </tbody>
+        </table>
+      </Section>
+      <Section title="Pair Results" headerSize="1.2">
+        <PairTable>
+          {pairs.map((pairData, index) => {
             const pairWinner = Object.entries(pairData).reduce((currentWinner, challenger) => {
               if (currentWinner[1] === challenger[1]) {
                 return [''];
@@ -245,35 +257,32 @@ const Results = ({ options, data }) => {
               return challenger;
             });
             return (
-              <PairTable key={key}>
+              // eslint-disable-next-line react/no-array-index-key
+              <Fragment key={index}>
                 <tbody>
                   {Object.entries(pairData).map(([option, count]) => (
                     <tr key={option}>
-                      <PairBox winner={option === pairWinner[0]}>{option}</PairBox>
                       <PairBox winner={option === pairWinner[0]}>{count}</PairBox>
+                      <PairBox winner={option === pairWinner[0]}>{option}</PairBox>
                     </tr>
                   ))}
                 </tbody>
-              </PairTable>
+                <tbody>
+                  <PairSpacing />
+                </tbody>
+              </Fragment>
             );
           })}
-        </Section>
-        <Section title="Wins" headerSize="1.2">
-          {Object.entries(wins).map(([option, count]) => (
-            <div key={option}>
-              {`${option}: ${count}`}
-            </div>
-          ))}
-        </Section>
+        </PairTable>
       </Section>
-    </div>
-  );
-};
+    </Section>
+  </div>
+);
 
 const Poll = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { loading: pollLoading, data: pollData } = useQuery(POLL, {
+  const { /* loading: pollLoading, */ data: pollData } = useQuery(POLL, {
     variables: { id },
     fetchPolicy: 'cache-and-network',
   });
@@ -283,7 +292,7 @@ const Poll = () => {
 
   const [
     getPollResult,
-    { loading: pollResultLoading, data: pollResultData },
+    { /* loading: pollResultLoading, */ data: pollResultData },
   ] = useLazyQuery(POLL_RESULT, {
     variables: { id },
     fetchPolicy: 'cache-and-network',
@@ -299,7 +308,219 @@ const Poll = () => {
     }
   }, [voteData?.vote]);
 
-  const { title, description, options } = pollData?.poll || {};
+  const {
+    title, description, options, count,
+  } = pollData?.poll || {};
+
+  // begin calculation logic
+  const pairs = {};
+  pollResultData?.pollResult.forEach((datum) => {
+    const unrankedOptions = options.filter((option) => !datum.vote.includes(option));
+    // option was not explicitly voted for
+    datum.vote.forEach((higher, index) => {
+      if (options.includes(higher)) {
+        const tally = (lower) => {
+          const key = getKey(higher, lower);
+          if (!pairs[key]) {
+            pairs[key] = {
+              [higher]: datum.count,
+              [lower]: 0,
+            };
+          } else {
+            pairs[key] = {
+              ...pairs[key],
+              [higher]: pairs[key][higher] + datum.count,
+            };
+          }
+        };
+
+        datum.vote.slice(index + 1).forEach((lower) => {
+          if (options.includes(lower)) {
+            tally(lower);
+          }
+        });
+        unrankedOptions.forEach((lower) => {
+          tally(lower);
+        });
+      }
+    });
+  });
+
+  const rankedPairs = Object.values(pairs).sort((pair1, pair2) => {
+    const pair1Options = Object.keys(pair1);
+    const pair2Options = Object.keys(pair2);
+    let pair1Winner;
+    let pair2Winner;
+    let pair1Loser;
+    let pair2Loser;
+    if (pair1[pair1Options[0]] > pair1[pair1Options[1]]) {
+      [pair1Winner, pair1Loser] = pair1Options;
+    } else {
+      [pair1Loser, pair1Winner] = pair1Options;
+    }
+    if (pair2[pair2Options[0]] > pair2[pair2Options[1]]) {
+      [pair2Winner, pair2Loser] = pair2Options;
+    } else {
+      [pair2Loser, pair2Winner] = pair2Options;
+    }
+
+    if (pair1[pair1Winner] !== pair2[pair2Winner]) {
+      return pair2[pair2Winner] - pair1[pair1Winner];
+    }
+    return pair1[pair1Loser] - pair2[pair2Loser];
+  });
+
+  let nodes = options ? options.reduce((object, option) => ({
+    ...object,
+    [option]: {
+      above: [],
+      below: [],
+    },
+  }), {}) : {};
+
+  let tieResolver = {};
+
+  rankedPairs.forEach((pair, index) => {
+    const option = Object.keys(pair);
+    let winner;
+    let loser;
+    if (pair[option[0]] > pair[option[1]]) {
+      [winner, loser] = option;
+    } else if (pair[option[0]] < pair[option[1]]) {
+      [loser, winner] = option;
+    }
+    if (winner && loser) {
+      // doesn't run if there is a numeric tie
+      let endTieResolver = false;
+      if (index !== rankedPairs.length - 1) {
+        let winner2;
+        let loser2;
+        const pair2 = rankedPairs[index + 1];
+        const option2 = Object.keys(pair2);
+        if (pair2[option2[0]] > pair2[option2[1]]) {
+          [winner2, loser2] = option2;
+        } else if (pair2[option2[0]] < pair2[option2[1]]) {
+          [loser2, winner2] = option2;
+        }
+
+        if (pair[winner] === pair2[winner2] && pair[loser] === pair2[loser2]) {
+          // need to start tie resolver by deep copying from nodes
+          if (!Object.keys(tieResolver).length) {
+            // tie resolver not already initialized
+            tieResolver = {};
+            Object.entries(nodes).forEach(([key, values]) => {
+              tieResolver[key] = {
+                above: [...values.above],
+                below: [...values.below],
+              };
+            });
+          }
+        } else {
+          endTieResolver = true;
+        }
+      } else {
+        endTieResolver = true;
+      }
+
+      if (Object.keys(tieResolver).length) {
+        // tieResolver initialized
+        const check = addNodeToTree(winner, loser, tieResolver);
+        if (!check) {
+          tieResolver = {};
+        } else if (endTieResolver) {
+          // the check passed;
+          nodes = { ...tieResolver };
+        }
+      } else {
+        addNodeToTree(winner, loser, nodes);
+      }
+    }
+  });
+
+  // copy into a const so that eslint stops yelling at me
+  const completedNodes = { ...nodes };
+
+  const rankings = [[]];
+  const ratios = [];
+  let unranked = options ? options.filter((option) => {
+    if (!nodes[option].above.length) {
+      // nothing above it therefore is a source
+      rankings[0].push(option);
+      return false;
+    }
+    return true;
+  }) : [];
+  let lastUnrankedLength = 0;
+  while (unranked.length && lastUnrankedLength !== unranked.length) {
+    // length is the same indicating filter failed
+    const prevRankings = [...rankings.flat()];
+    rankings.push([]);
+    lastUnrankedLength = unranked.length;
+    unranked = unranked.filter((key) => {
+      if (isSourceAfterRemove(completedNodes[key].above, prevRankings)) {
+        // the nodes above are already in the rankings
+        rankings[rankings.length - 1].push(key);
+        return false;
+      }
+      // aboveChecks[key] = [...nodes[key].above];
+      return true;
+    });
+
+    let winTotal = 0;
+    let loseTotal = 0;
+    rankings[rankings.length - 1].forEach((pair1) => {
+      rankings[rankings.length - 2].forEach((pair2) => {
+        const key = getKey(pair1, pair2);
+        const optionKeys = Object.keys(pairs[key]);
+        if (pairs[key][optionKeys[0]] > pairs[key][optionKeys[1]]) {
+          winTotal += pairs[key][optionKeys[0]];
+          loseTotal += pairs[key][optionKeys[1]];
+        } else {
+          winTotal += pairs[key][optionKeys[1]];
+          loseTotal += pairs[key][optionKeys[0]];
+        }
+      });
+    });
+
+    ratios.push(loseTotal / winTotal);
+  }
+  const actualRatio = ratios.reduce(
+    (array, value) => [...array, array[array.length - 1] * value],
+    [1],
+  );
+  const ratioTotal = actualRatio.reduce(
+    (total, value, index) => total + value * rankings[index].length,
+    0,
+  );
+  const ratioPercents = actualRatio.map(
+    (number) => ((number / ratioTotal) * 100),
+  );
+
+  // end calculation logic
+
+  let submit = null;
+  if (submitted) {
+    submit = <VoteSubmitted>Vote Submitted</VoteSubmitted>;
+  } else if (!pollResultData) {
+    submit = (
+      <SubmitButton
+        type="button"
+        disabled={!rank.length}
+        onClick={() => vote({
+          variables: {
+            input: {
+              user: null,
+              pollId: id,
+              vote: rank,
+            },
+          },
+        })}
+      >
+        Submit
+      </SubmitButton>
+    );
+  }
+
   return (
     <Main backgroundColor="skyblue">
       <Card>
@@ -311,7 +532,7 @@ const Poll = () => {
             {description}
           </Description>
         ) : null}
-        {rank.length ? (
+        {rank.length && !pollResultData ? (
           <Ranking>
             {rank.map((option, index) => {
               const onCancel = () => {
@@ -346,7 +567,7 @@ const Poll = () => {
             })}
           </Ranking>
         ) : null}
-        {options ? (
+        {options && !pollResultData ? (
           <div>
             {options.filter((option) => !rank.includes(option)).map((option) => {
               const boxClick = () => {
@@ -363,26 +584,31 @@ const Poll = () => {
             })}
           </div>
         ) : null}
+        {pollResultData ? (
+          <div>
+            {options.map((option) => {
+              const index = rankings.findIndex((array) => array.includes(option));
+              return (
+                <PollOption
+                  key={option}
+                  name={option}
+                  rank={index + 1 || '0'}
+                  percent={`${(ratioPercents[index] || 0).toFixed(2)}%`}
+                  disabled
+                />
+              );
+            })}
+          </div>
+        ) : null}
         <CardBottom>
-          {submitted ? <div>Vote Submitted</div> : (
-            <button
-              type="button"
-              disabled={!rank.length}
-              onClick={() => vote({
-                variables: {
-                  input: {
-                    user: null,
-                    pollId: id,
-                    vote: rank,
-                  },
-                },
-              })}
-            >
-              Submit
-            </button>
-          )}
+          {submit}
+          <TotalVotes>
+            Total Votes:
+            {' '}
+            {count}
+          </TotalVotes>
           <CardBottomRight>
-            <input type="text" value={`rankedpoll.com/poll/${id}`} disabled />
+            <input type="text" value={`rnkd.pl/${id}`} disabled />
             <button
               type="button"
               onClick={() => getPollResult({
@@ -395,7 +621,12 @@ const Poll = () => {
             </button>
           </CardBottomRight>
         </CardBottom>
-        {pollResultData ? <Results options={options} data={pollResultData} /> : null}
+        {pollResultData ? (
+          <Results
+            pairs={rankedPairs}
+            votes={pollResultData.pollResult}
+          />
+        ) : null}
       </Card>
     </Main>
   );
