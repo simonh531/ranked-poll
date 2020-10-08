@@ -282,10 +282,19 @@ const Results = ({ pairs, votes }) => (
 const Poll = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { /* loading: pollLoading, */ data: pollData } = useQuery(POLL, {
+  const [
+    getPollData,
+    { /* loading: pollLoading, */ data: pollData },
+  ] = useLazyQuery(POLL, {
     variables: { id },
     fetchPolicy: 'cache-and-network',
   });
+
+  useEffect(() => {
+    if (id) {
+      getPollData();
+    }
+  }, [id]);
   // console.log(pollData);
   const [vote, { data: voteData }] = useMutation(VOTE);
   // console.log(voteData);
@@ -611,9 +620,7 @@ const Poll = () => {
             <input type="text" value={`rnkd.pl/${id}`} disabled />
             <button
               type="button"
-              onClick={() => getPollResult({
-                variables: { id },
-              })}
+              onClick={getPollResult}
             >
               {pollResultData
                 ? <span className="material-icons">sync</span>
