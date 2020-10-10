@@ -54,7 +54,7 @@ export default function App({ Component, pageProps }) {
           <title>Ranked Poll</title>
           <link rel="stylesheet" type="text/css" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css" />
           <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-          <link href="https://fonts.googleapis.com/css2?family=Merriweather&family=Open+Sans&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Merriweather&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
         </Head>
         <Nav>
           <Link href="/" passHref><MainA>Ranked Poll</MainA></Link>
@@ -62,7 +62,11 @@ export default function App({ Component, pageProps }) {
           <CenterSpace />
           <Account className="material-icons">account_circle</Account>
         </Nav>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <Component {...pageProps} />
+        <footer>
+          I'm a footer
+        </footer>
       </ApolloProvider>
     </Provider>
   );

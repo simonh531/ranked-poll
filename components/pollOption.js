@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   margin: 0.5em 0;
 `;
 
@@ -64,13 +64,16 @@ const BarPercent = styled.div`
 const BarContainer = styled.div`
   flex: 1;
   height: 100%;
+  border-left: 2px solid black;
 `;
 
 const Bar = styled.div`
   background-color: skyblue;
   width: ${(props) => props.percent};
-  height: 100%;
+  height: calc(100% - 12px);
+  margin: 6px 0;
   box-shadow: 0 0 2px 2px rgba(0,0,0,0.5);
+  filter: saturate(200%);
 `;
 
 const PollOption = ({

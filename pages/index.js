@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import PollOption from '../components/pollOption';
 
-import { Card, Description } from '../style/card';
+import { Card, Description, SubmitButton } from '../style/card';
 
 const Main = styled.main`
   min-height: calc(100vh - 40px);
@@ -22,11 +22,27 @@ const Title = styled.div`
   font-family: Merriweather, serif;
   font-size: 2.4em;
   text-align: center;
+  color: white;
+  text-shadow: 0 0 8px black;
 `;
 
 const Why = styled.a`
   margin: 0 0.5ch;
   font-size: 0.9em;
+  background-color: skyblue;
+  filter: saturate(200%);
+  padding: 8px;
+  border-radius: 4px;
+  text-shadow: 0 0 2px black;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+
+  :hover {
+    text-decoration: underline;
+    box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+  }
 `;
 
 const Question = styled.input`
@@ -89,7 +105,7 @@ const Index = () => {
     <Main backgroundColor="skyblue">
       <Title>
         Instantly create ranked choice polls!
-        <Why>Why?</Why>
+        <Link href="/about/" passHref><Why>Why?</Why></Link>
       </Title>
       <Card>
         <div>
@@ -134,7 +150,7 @@ const Index = () => {
             );
           })}
         </div>
-        <button
+        <SubmitButton
           type="button"
           onClick={() => createPoll({
             variables: {
@@ -149,7 +165,7 @@ const Index = () => {
           disabled={!title || Object.values(options).join('') === ''}
         >
           Submit
-        </button>
+        </SubmitButton>
       </Card>
     </Main>
   );
