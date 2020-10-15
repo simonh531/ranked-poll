@@ -161,10 +161,10 @@ const Index = () => {
       } else {
         setCustomColor(true);
       }
-      firstRender.current = false;
     } else if (!customColor) {
       themeColorVar(Colors[colorName]);
     }
+    firstRender.current = false;
   }, [colorName, customColor]);
 
   const router = useRouter();
