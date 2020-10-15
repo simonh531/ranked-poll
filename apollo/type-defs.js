@@ -22,6 +22,8 @@ export default gql`
     title: String!
     description: String
     options: [String]!
+    color: [Int]!
+    randomize: Boolean!
   }
 
   input VoteInput {
@@ -44,6 +46,8 @@ export default gql`
     title: String!
     description: String
     options: [String]!
+    color: [Int]!
+    randomize: Boolean!
     createdAt: String!
     deletedAt: String
     editedAt: String

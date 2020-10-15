@@ -21,5 +21,8 @@ module.exports = {
   rules: {
     'react/jsx-filename-extension': 'off',
     'react/prop-types': 'off',
+    'jsx-a11y/label-has-associated-control': [2, {
+      controlComponents: ['ColorInput'],
+    }],
   },
 };

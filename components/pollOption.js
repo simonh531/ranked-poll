@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useReactiveVar } from '@apollo/client';
+import { themeColorVar } from './layout';
 
 const Container = styled.div`
   display: flex;
@@ -7,11 +9,9 @@ const Container = styled.div`
   margin: 0.5em 0;
 `;
 
-const Box = styled.span`
-  font-size: 1em;
-  margin-right: 0.2ch;
-  cursor: ${(props) => (props.active ? 'pointer' : 'default')};
-  pointer-events: ${(props) => (props.disabled ? 'none' : 'auto')};
+const Box = styled.input`
+  margin-right: 1ch;
+  pointer-events: ${(props) => (props.clickThrough ? 'none' : 'auto')};
 `;
 
 const Rank = styled.div`
@@ -19,7 +19,7 @@ const Rank = styled.div`
   margin-right: 1ch;
 `;
 
-const Name = styled.span`
+const Name = styled.label`
   font-family: Open Sans, sans-serif;
 `;
 
@@ -68,28 +68,27 @@ const BarContainer = styled.div`
 `;
 
 const Bar = styled.div`
-  background-color: skyblue;
+  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});
   width: ${(props) => props.percent};
   height: calc(100% - 12px);
   margin: 6px 0;
   box-shadow: 0 0 2px 2px rgba(0,0,0,0.5);
-  filter: saturate(200%);
+  filter: saturate(300%);
 `;
 
 const PollOption = ({
-  name, value, onChange, upClick, downClick, onCancel, lastOne, boxClick = () => {}, rank, disabled,
+  name, value, onChange, upClick, downClick, onCancel, lastOne,
+  boxClick = () => {}, rank, disabled, id,
   percent,
 }) => (
   <div>
     <Container>
       {rank ? <Rank>{rank}</Rank> : (
-        <Box className="material-icons" active={!onChange} onClick={boxClick} disabled={disabled}>
-          check_box_outline_blank
-        </Box>
+        <Box type="checkbox" tabIndex="-1" id={id} active={false} onClick={boxClick} clickThrough={disabled} />
       )}
       {onChange
         ? <Input type="text" placeholder="Enter an answer" value={value} onChange={onChange} />
-        : <Name>{name}</Name>}
+        : <Name htmlFor={id}>{name}</Name>}
       <Toolbar>
         {onChange && !lastOne ? (
           <Icon className="material-icons" onClick={onCancel}>

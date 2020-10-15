@@ -1,7 +1,9 @@
 import styled from 'styled-components';
+import { useReactiveVar } from '@apollo/client';
+import { themeColorVar } from '../components/layout';
 
 export const Card = styled.div`
-  margin-top: 20px;
+  margin: 20px 0;
   width: 60%;
   padding: 20px;
   min-width: 320px;
@@ -29,14 +31,18 @@ export const SubmitButton = styled.button`
   font-size: 1.2em;
   text-shadow: 0 0 1px black;
   border: 0;
-  background-color: skyblue;
+  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});;
   color: white;
-  filter: saturate(200%);
+  filter: saturate(300%);
   cursor: pointer;
   box-shadow: 0 0 1px rgba(0,0,0,0.5);
   letter-spacing: 1px;
 
   :hover {
     box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+  }
+
+  :active {
+    filter: saturate(300%) brightness(80%);
   }
 `;

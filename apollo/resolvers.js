@@ -54,9 +54,9 @@ export default {
 
     createPoll(_source, { input }, { dataSources }) {
       const {
-        owner, title, description, options,
+        owner, title, description, options, color, randomize,
       } = input;
-      return dataSources.postgres.createPoll(owner, title, description, options);
+      return dataSources.postgres.createPoll(owner, title, description, options, color, randomize);
     },
 
     vote(_source, { input }, { dataSources }) {

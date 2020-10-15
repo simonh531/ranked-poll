@@ -1,4 +1,6 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, {
+  useState, useEffect, Fragment, useRef, useMemo,
+} from 'react';
 import { useRouter } from 'next/router';
 import {
   gql, useMutation, useLazyQuery,
@@ -6,41 +8,9 @@ import {
 import styled from 'styled-components';
 
 import PollOption from '../../components/pollOption';
-
+import { themeColorVar } from '../../components/layout';
 import { Card, Description, SubmitButton } from '../../style/card';
-
 import calc from '../../rankedPairsCalc';
-
-const Main = styled.main`
-  min-height: calc(100vh - 40px);
-  background-color: ${(props) => props.backgroundColor};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const Question = styled.h1`
-  font-family: Merriweather, serif;
-  border-bottom: 1px solid black;
-  margin: 8px 0;
-  width: 100%;
-  padding: 4px;
-`;
-
-const Ranking = styled.div`
-  border-bottom: 1px solid black;
-`;
-
-const CardBottom = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  align-items: center;
-`;
-
-const Spacer = styled.div`
-  flex: 1;
-`;
 
 const Header = styled.h3`
   font-size: ${(props) => props.headerSize}em;
@@ -57,6 +27,27 @@ const HeaderControl = styled.span`
 const Children = styled.div`
   font-family: Open Sans, sans-serif;
 `;
+
+const Section = ({ children, title, headerSize }) => {
+  const [show, setShow] = useState(false);
+  const toggleShow = () => setShow(!show);
+
+  return (
+    <>
+      <Header headerSize={headerSize} onClick={toggleShow}>
+        <HeaderControl className="material-icons">
+          {show ? 'expand_less' : 'expand_more'}
+        </HeaderControl>
+        {title}
+      </Header>
+      {show ? (
+        <Children>
+          {children}
+        </Children>
+      ) : null}
+    </>
+  );
+};
 
 const PreferenceHeader = styled.th`
   text-align: left;
@@ -76,6 +67,94 @@ const PairSpacing = styled.tr`
 
 const PairBox = styled.td`
   font-weight: ${(props) => (props.winner ? '600' : '400')};
+`;
+
+const Results = ({ pairs, votes }) => (
+  <div>
+    <Section title="Advanced" headerSize="1.4">
+      <Section title="Votes" headerSize="1.2">
+        <table>
+          <thead>
+            <tr>
+              <th>Count</th>
+              <PreferenceHeader>Preferences</PreferenceHeader>
+            </tr>
+          </thead>
+          <tbody>
+            {votes.map((datum) => (
+              <tr key={datum.vote}>
+                <TableNumber>{datum.count}</TableNumber>
+                <td>{datum.vote.join(' > ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Section>
+      <Section title="Pair Results" headerSize="1.2">
+        <PairTable>
+          {pairs.map((pairData, index) => {
+            const order = Object.entries(pairData).sort(
+              // eslint-disable-next-line no-unused-vars
+              ([_, score1], [__, score2]) => score2 - score1,
+            );
+            return (
+              // eslint-disable-next-line react/no-array-index-key
+              <Fragment key={index}>
+                <tbody>
+                  <tr>
+                    <PairBox winner={order[0][1] > order[1][1]}>{order[0][1]}</PairBox>
+                    <PairBox winner={order[0][1] > order[1][1]}>{order[0][0]}</PairBox>
+                  </tr>
+                  <tr>
+                    <PairBox>{order[1][1]}</PairBox>
+                    <PairBox>{order[1][0]}</PairBox>
+                  </tr>
+                </tbody>
+                <tbody>
+                  <PairSpacing />
+                </tbody>
+              </Fragment>
+            );
+          })}
+        </PairTable>
+      </Section>
+    </Section>
+  </div>
+);
+
+const Main = styled.main`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Title = styled.div`
+  display: flex;
+  border-bottom: 1px solid black;
+  margin: 8px 0;
+`;
+
+const Question = styled.h1`
+  margin: 0;
+  font-family: Merriweather, serif;
+  padding: 4px;
+  flex: 1;
+`;
+
+const Ranking = styled.div`
+  border-bottom: 1px solid black;
+`;
+
+const CardBottom = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  align-items: center;
+`;
+
+const Spacer = styled.div`
+  flex: 1;
 `;
 
 const TotalVotes = styled.div`
@@ -112,6 +191,10 @@ const CopyButton = styled.button`
   :hover {
     box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
   }
+
+  :active {
+    filter: brightness(80%);
+  }
 `;
 
 const CopyText = styled.div`
@@ -120,10 +203,11 @@ const CopyText = styled.div`
   font-family: Open Sans, sans-serif;
 `;
 
-const SeeResultsButton = styled.div`
+const SeeResultsButton = styled.button`
   margin-right: 4px;
   border: 0;
   font-family: Open Sans, sans-serif;
+  background-color: transparent;
   cursor: pointer;
 
   :hover {
@@ -131,12 +215,27 @@ const SeeResultsButton = styled.div`
   }
 `;
 
+const OrderButton = styled.button`
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  cursor: pointer;
+`;
+
+const OrderIcon = styled.span`
+  font-size: 2em;
+  opacity: ${(props) => (props.active ? '1' : '0.5')};
+`;
+
 const POLL = gql`
   query poll($id: ID!) {
     poll(id: $id) {
+      id
       title
       description
       options
+      color
+      randomize
       count
     }
   }
@@ -148,6 +247,10 @@ const POLL_RESULT = gql`
       vote
       count
     }
+    poll(id: $id) {
+      id
+      count
+    }
   }
 `;
 
@@ -157,83 +260,30 @@ const VOTE = gql`
   }
 `;
 
-const Section = ({ children, title, headerSize }) => {
-  const [show, setShow] = useState(false);
-  const toggleShow = () => setShow(!show);
+function randomizeArray(array) {
+  if (!array.length) {
+    return [];
+  }
+  const arrayCopy = [...array];
+  let targetIndex = array.length - 1;
+  let temp;
+  let randomIndex;
 
-  return (
-    <>
-      <Header headerSize={headerSize} onClick={toggleShow}>
-        <HeaderControl className="material-icons">
-          {show ? 'expand_less' : 'expand_more'}
-        </HeaderControl>
-        {title}
-      </Header>
-      {show ? (
-        <Children>
-          {children}
-        </Children>
-      ) : null}
-    </>
-  );
-};
+  while (targetIndex) {
+    randomIndex = Math.floor(Math.random() * (targetIndex + 1));
 
-const Results = ({ pairs, votes }) => (
-  <div>
-    <Section title="Advanced" headerSize="1.4">
-      <Section title="Votes" headerSize="1.2">
-        <table>
-          <thead>
-            <tr>
-              <th>Count</th>
-              <PreferenceHeader>Preferences</PreferenceHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {votes.map((datum) => (
-              <tr key={datum.vote}>
-                <TableNumber>{datum.count}</TableNumber>
-                <td>{datum.vote.join(' > ')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Section>
-      <Section title="Pair Results" headerSize="1.2">
-        <PairTable>
-          {pairs.map((pairData, index) => {
-            const pairWinner = Object.entries(pairData).reduce((currentWinner, challenger) => {
-              if (currentWinner[1] === challenger[1]) {
-                return [''];
-              } if (currentWinner[1] > challenger[1]) {
-                return currentWinner;
-              }
-              return challenger;
-            });
-            return (
-              // eslint-disable-next-line react/no-array-index-key
-              <Fragment key={index}>
-                <tbody>
-                  {Object.entries(pairData).map(([option, count]) => (
-                    <tr key={option}>
-                      <PairBox winner={option === pairWinner[0]}>{count}</PairBox>
-                      <PairBox winner={option === pairWinner[0]}>{option}</PairBox>
-                    </tr>
-                  ))}
-                </tbody>
-                <tbody>
-                  <PairSpacing />
-                </tbody>
-              </Fragment>
-            );
-          })}
-        </PairTable>
-      </Section>
-    </Section>
-  </div>
-);
+    temp = arrayCopy[randomIndex];
+    arrayCopy[randomIndex] = arrayCopy[targetIndex];
+    arrayCopy[targetIndex] = temp;
+
+    targetIndex -= 1;
+  }
+
+  return arrayCopy;
+}
 
 const Poll = () => {
+  const copy = useRef(null);
   const router = useRouter();
   const { id } = router.query;
   const [
@@ -250,7 +300,16 @@ const Poll = () => {
     }
   }, [id]);
   // console.log(pollData);
-  const [vote, { data: voteData }] = useMutation(VOTE);
+  const [vote, { data: voteData }] = useMutation(VOTE, {
+    update: (cache) => {
+      cache.modify({
+        id: cache.identify(pollData.poll),
+        fields: {
+          count: (countValue) => countValue + 1,
+        },
+      });
+    },
+  });
   // console.log(voteData);
 
   const [
@@ -259,11 +318,24 @@ const Poll = () => {
   ] = useLazyQuery(POLL_RESULT, {
     variables: { id },
     fetchPolicy: 'cache-and-network',
+    update: (cache) => {
+      cache.modify({
+        id: cache.identify(pollData.poll),
+        fields: {
+          count: (countValue) => countValue + 1,
+        },
+      });
+    },
   });
   // console.log(pollResultData);
 
   const [rank, setRank] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [sortResults, setSortResults] = useState(true);
+
+  const toggleSortResults = () => {
+    setSortResults(!sortResults);
+  };
 
   useEffect(() => {
     if (voteData?.vote) {
@@ -272,10 +344,34 @@ const Poll = () => {
   }, [voteData?.vote]);
 
   const {
-    title, description, options, count,
+    title, description, options, color, randomize, count,
   } = pollData?.poll || {};
 
-  const { rankings, rankedPairs, ratioPercents } = calc(pollResultData?.pollResult, options);
+  const orderedOptions = useMemo(() => {
+    if (randomize) {
+      return randomizeArray(options);
+    }
+    return options;
+  }, [options, randomize]);
+
+  useEffect(() => {
+    if (color) {
+      themeColorVar(color);
+    }
+  }, [color]);
+
+  const copyDiv = () => {
+    if (copy.current) {
+      const range = document.createRange();
+      range.selectNode(copy.current);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+    }
+  };
+
+  const { rankings, rankedPairs, ratioPercents } = calc(pollResultData?.pollResult, orderedOptions);
 
   let submit = null;
   if (submitted) {
@@ -301,11 +397,18 @@ const Poll = () => {
   }
 
   return (
-    <Main backgroundColor="skyblue">
+    <Main>
       <Card>
-        <Question>
-          {title}
-        </Question>
+        <Title>
+          <Question>
+            {title}
+          </Question>
+          {pollResultData && (
+            <OrderButton onClick={toggleSortResults}>
+              <OrderIcon className="material-icons" active={sortResults}>sort</OrderIcon>
+            </OrderButton>
+          )}
+        </Title>
         {description ? (
           <Description>
             {description}
@@ -346,9 +449,9 @@ const Poll = () => {
             })}
           </Ranking>
         ) : null}
-        {options && !pollResultData ? (
+        {orderedOptions && !pollResultData ? (
           <div>
-            {options.filter((option) => !rank.includes(option)).map((option) => {
+            {orderedOptions.filter((option) => !rank.includes(option)).map((option) => {
               const boxClick = () => {
                 setRank([...rank, option]);
               };
@@ -365,7 +468,19 @@ const Poll = () => {
         ) : null}
         {pollResultData ? (
           <div>
-            {options.map((option) => {
+            {[...orderedOptions].sort((option1, option2) => {
+              if (!sortResults) {
+                return 0;
+              }
+              const percent1 = ratioPercents[
+                rankings.findIndex((array) => array.includes(option1))
+              ] || 0;
+              const percent2 = ratioPercents[
+                rankings.findIndex((array) => array.includes(option2))
+              ] || 0;
+
+              return percent2 - percent1;
+            }).map((option) => {
               const index = rankings.findIndex((array) => array.includes(option));
               return (
                 <PollOption
@@ -382,11 +497,10 @@ const Poll = () => {
         <CardBottom>
           {submit}
           <TotalVotes>
-            {count + (count === 1 ? ' vote' : ' votes')}
+            {(count || 0) + (count === 1 ? ' vote' : ' votes')}
           </TotalVotes>
           <Spacer />
           <SeeResultsButton
-            type="button"
             onClick={getPollResult}
           >
             {pollResultData
@@ -394,8 +508,8 @@ const Poll = () => {
               : 'See Results'}
           </SeeResultsButton>
           <CopyContainer>
-            <CopyButton><span className="material-icons">content_copy</span></CopyButton>
-            <CopyText>{`rnkd.pl/${id}`}</CopyText>
+            <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
+            <CopyText ref={copy}>{`rnkd.pl/${id}`}</CopyText>
           </CopyContainer>
         </CardBottom>
         {pollResultData ? (

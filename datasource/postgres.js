@@ -1,6 +1,7 @@
 import { DataSource } from 'apollo-datasource';
 import shortid from 'shortid';
 import { v4 as uuidv4 } from 'uuid';
+import Colors from '../style/colors';
 
 export default class PostgresDB extends DataSource {
   constructor({ pool }) {
@@ -18,11 +19,11 @@ export default class PostgresDB extends DataSource {
     this.context = config.context;
   }
 
-  async createPoll(owner = null, title = 'Default Title', description = null, options = []) {
+  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors['Sky Blue'], randomize = true) {
     if (options.length) {
       const id = shortid.generate();
-      const text = 'INSERT INTO poll(id, owner_id, title, description, options) VALUES($1, $2, $3, $4, $5) RETURNING *';
-      const values = [id, owner, title, description, options];
+      const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *';
+      const values = [id, owner, title, description, options, color, randomize];
       try {
         const res = await this.pool.query(text, values);
         return res.rows[0];
