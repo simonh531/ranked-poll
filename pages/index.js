@@ -11,6 +11,60 @@ import { themeColorVar } from '../components/layout';
 import { Card, Description, SubmitButton } from '../style/card';
 import Colors from '../style/colors';
 
+const TooltipArea = styled.button`
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+`;
+
+const HelpIcon = styled.span`
+  background-color: transparent;
+  display: inline-block;
+  text-align: center;
+  line-height: 1em;
+  border: 1px solid black;
+  border-radius: 50%;
+  height: 1.1em;
+  width: 1.1em;
+  font-size: 0.9em;
+`;
+
+const HintText = styled.span`
+  margin-left: 8px;
+  font-size: 0.9em;
+  color: white;
+  background-color: #666666;
+  border-radius: 2px;
+  padding: 0 4px;
+  position: relative;
+`;
+
+const LeftArrow = styled.div`
+  position: absolute;
+  right: 100%;
+  top: calc(50% - 6px);
+  border: 6px solid transparent;
+  border-left-width: 0;
+  border-right-color: #666666;
+`;
+
+const Tooltip = ({ children }) => {
+  const [show, setShow] = useState(false);
+  const toggleShow = () => setShow(!show);
+
+  return (
+    <TooltipArea onClick={toggleShow}>
+      <HelpIcon>?</HelpIcon>
+      {show && (
+      <HintText>
+        <LeftArrow />
+        {children}
+      </HintText>
+      )}
+    </TooltipArea>
+  );
+};
+
 const Main = styled.main`
   flex: 1;
   display: flex;
@@ -83,10 +137,6 @@ const DescriptionTextarea = styled.textarea`
 
 const Options = styled.div`
   margin: 24px 0;
-`;
-
-const HintText = styled.span`
-  font-size: 0.9em;
 `;
 
 const Option = styled.div`
@@ -239,9 +289,11 @@ const Index = () => {
               <input type="checkbox" id="randomize" checked={randomize} onChange={createCheckFunc(randomize, setRandomize)} />
               {' '}
               Randomize option order
-              {' '}
-              <HintText>Prevents position bias</HintText>
             </label>
+            {' '}
+            <Tooltip>
+              Prevents position bias
+            </Tooltip>
           </Option>
           <Option>
             Color:
@@ -268,11 +320,16 @@ const Index = () => {
                   {Object.keys(Colors).map((name) => <option key={name}>{name}</option>)}
                 </ColorSelect>
               )}
-            <label htmlFor="customColor">
-              <input id="customColor" type="checkbox" checked={customColor} onChange={createCheckFunc(customColor, setCustomColor)} />
+            {/* <label htmlFor="customColor">
+              <input
+                id="customColor"
+                type="checkbox"
+                checked={customColor}
+                onChange={createCheckFunc(customColor, setCustomColor)}
+              />
               {' '}
               Custom
-            </label>
+            </label> */}
           </Option>
         </Options>
         <SubmitButton

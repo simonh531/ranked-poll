@@ -224,7 +224,8 @@ const OrderButton = styled.button`
 
 const OrderIcon = styled.span`
   font-size: 2em;
-  opacity: ${(props) => (props.active ? '1' : '0.5')};
+  border-radius: 4px;
+  border: 1px solid ${(props) => (props.active ? 'black' : 'transparent')};
 `;
 
 const POLL = gql`
