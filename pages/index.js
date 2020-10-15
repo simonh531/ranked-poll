@@ -15,10 +15,10 @@ const TooltipArea = styled.button`
   padding: 0;
   border: 0;
   cursor: pointer;
+  background-color: transparent;
 `;
 
 const HelpIcon = styled.span`
-  background-color: transparent;
   display: inline-block;
   text-align: center;
   line-height: 1em;
@@ -74,12 +74,17 @@ const Main = styled.main`
 
 const Title = styled.div`
   margin: 20px;
-  width: 50%;
+  width: 60%;
+  min-width: 320px;
   font-family: Merriweather, serif;
   font-size: 2.4em;
   text-align: center;
   color: white;
   text-shadow: 0 0 8px black;
+
+  @media (max-width: 400px) {
+    font-size: 2em;
+  }
 `;
 
 const Why = styled.a`
