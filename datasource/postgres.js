@@ -19,11 +19,11 @@ export default class PostgresDB extends DataSource {
     this.context = config.context;
   }
 
-  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors['Sky Blue'], randomize = true) {
+  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors['Sky Blue'], randomize = true, protection = 'cookie_id') {
     if (options.length) {
       const id = shortid.generate();
-      const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *';
-      const values = [id, owner, title, description, options, color, randomize];
+      const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize, protection) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
+      const values = [id, owner, title, description, options, color, randomize, protection];
       try {
         const res = await this.pool.query(text, values);
         return res.rows[0];
@@ -37,7 +37,7 @@ export default class PostgresDB extends DataSource {
 
   async getPoll(id) {
     if (id) {
-      const text = 'SELECT poll.*, count(vote) FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
+      const text = 'SELECT poll.*, COUNT(*), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
       const values = [id];
       try {
         const res = await this.pool.query(text, values);
@@ -64,10 +64,19 @@ export default class PostgresDB extends DataSource {
     return false;
   }
 
-  async getPollResult(id) {
+  async getPollResult(id, protection) {
     if (id) {
-      const text = 'SELECT vote, COUNT(vote) FROM vote WHERE poll_id = $1 GROUP BY vote';
+      let text;
       const values = [id];
+      if (protection === 'none') {
+        text = 'SELECT vote, COUNT(vote) FROM vote WHERE poll_id = $1 GROUP BY vote';
+      } else if (protection === 'cookie_id') {
+        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (cookie_id) vote FROM vote WHERE poll_id = $1 ORDER BY cookie_id, created_at DESC) sub GROUP BY vote';
+      } else if (protection === 'ip') {
+        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (ip) vote FROM vote WHERE poll_id = $1 ORDER BY ip, created_at DESC) sub GROUP BY vote';
+      } else if (protection === 'user_id') {
+        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (user_id) vote FROM vote WHERE poll_id = $1 ORDER BY user_id, created_at DESC) sub GROUP BY vote';
+      }
       try {
         const res = await this.pool.query(text, values);
         return res.rows;

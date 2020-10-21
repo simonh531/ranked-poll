@@ -17,7 +17,6 @@ export const Description = styled.div`
   font-family: Open Sans, sans-serif;
   width: 100%;
   padding: 4px;
-  color: grey;
   white-space: pre-wrap;
 `;
 

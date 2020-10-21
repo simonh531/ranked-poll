@@ -179,14 +179,26 @@ const Index = () => {
   const [randomize, setRandomize] = useState(true);
   const [colorName, setColorName] = useState('Sky Blue');
   const [customColor, setCustomColor] = useState(false);
-  const [createPoll, { data }] = useMutation(CREATE_POLL);
   const [options, setOptions] = useState({
     [new Date().valueOf()]: '',
     [new Date().valueOf() + 1]: '',
   });
+  const [protection, setProtection] = useState('cookie_id');
   const firstRender = useRef(true);
-
   const themeColor = useReactiveVar(themeColorVar);
+  const [createPoll, { data }] = useMutation(CREATE_POLL, {
+    variables: {
+      input: {
+        title,
+        description,
+        owner: null,
+        options: [...new Set(Object.values(options).filter((value) => value.replace(/\s/g, '')))],
+        color: themeColor,
+        randomize,
+        protection,
+      },
+    },
+  });
 
   const changeColor = (e) => {
     setColorName(e.target.value);
@@ -290,6 +302,16 @@ const Index = () => {
         </div>
         <Options>
           <Option>
+            Double voting protection:
+            {' '}
+            <select onChange={(e) => setProtection(e.target.value)} value={protection}>
+              <option value="cookie_id">Cookie id</option>
+              <option value="ip">IP address</option>
+              {/* <option value="user_id">Sign in</option> */}
+              <option value="none">None</option>
+            </select>
+          </Option>
+          <Option>
             <label htmlFor="randomize">
               <input type="checkbox" id="randomize" checked={randomize} onChange={createCheckFunc(randomize, setRandomize)} />
               {' '}
@@ -340,18 +362,7 @@ const Index = () => {
         <SubmitButton
           color={themeColor.join(',')}
           type="button"
-          onClick={() => createPoll({
-            variables: {
-              input: {
-                title,
-                description,
-                owner: null,
-                options: [...new Set(Object.values(options).filter((value) => value.replace(/\s/g, '')))],
-                color: themeColor,
-                randomize,
-              },
-            },
-          })}
+          onClick={createPoll}
           disabled={!title || Object.values(options).join('') === ''}
         >
           Submit

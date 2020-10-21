@@ -1,6 +1,13 @@
 import { gql } from '@apollo/client';
 
 export default gql`
+  enum Protection {
+    cookie_id
+    ip
+    user_id
+    none
+  }
+
   type User {
     id: ID!
     email: String!
@@ -24,6 +31,7 @@ export default gql`
     options: [String]!
     color: [Int]!
     randomize: Boolean!
+    protection: Protection!
   }
 
   input VoteInput {
@@ -52,6 +60,10 @@ export default gql`
     deletedAt: String
     editedAt: String
     count: Int!
+    cookieCount: Int!
+    ipCount: Int
+    userCount: Int
+    protection: Protection
   }
 
   type VoteData {
@@ -64,7 +76,7 @@ export default gql`
     users: [User]!
     viewer: User
     poll(id: ID!): Poll!
-    pollResult(id: ID!): [VoteData]!
+    pollResult(id: ID!, protection: Protection!): [VoteData]!
   }
 
   type Mutation {

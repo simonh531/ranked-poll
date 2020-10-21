@@ -19,11 +19,13 @@ export default {
         );
       }
     },
-    poll(_source, { id }, { dataSources }) {
+    poll(_source, { id }, {
+      dataSources,
+    }) {
       return dataSources.postgres.getPoll(id);
     },
-    pollResult(_source, { id }, { dataSources }) {
-      return dataSources.postgres.getPollResult(id);
+    pollResult(_source, { id, protection }, { dataSources }) {
+      return dataSources.postgres.getPollResult(id, protection);
     },
   },
   Mutation: {
@@ -54,18 +56,21 @@ export default {
 
     createPoll(_source, { input }, { dataSources }) {
       const {
-        owner, title, description, options, color, randomize,
+        owner, title, description, options, color, randomize, protection,
       } = input;
-      return dataSources.postgres.createPoll(owner, title, description, options, color, randomize);
+      return dataSources.postgres.createPoll(
+        owner, title, description, options, color, randomize, protection,
+      );
     },
 
-    vote(_source, { input }, { dataSources }) {
-      const cookie = null;
-      const ip = null;
+    vote(_source, { input }, {
+      dataSources, ip, cookieId,
+    }) {
       const {
         user, pollId, vote,
       } = input;
-      return dataSources.postgres.vote(user, cookie, ip, pollId, vote);
+
+      return dataSources.postgres.vote(user, cookieId, ip, pollId, vote);
     },
   },
 };

@@ -88,7 +88,7 @@ export default function Layout({ children }) {
         <Link href="/" passHref><MainA>Ranked Poll</MainA></Link>
         <Link href="/about" passHref><A>About</A></Link>
         <CenterSpace />
-        <Account className="material-icons">account_circle</Account>
+        {/* <Account className="material-icons">account_circle</Account> */}
       </Nav>
       {children}
       <Footer>

@@ -238,13 +238,16 @@ const POLL = gql`
       color
       randomize
       count
+      cookieCount
+      ipCount
+      protection
     }
   }
 `;
 
 const POLL_RESULT = gql`
-  query pollResult($id: ID!) {
-    pollResult(id: $id) {
+  query pollResult($id: ID!, $protection: Protection!) {
+    pollResult(id: $id, protection: $protection) {
       vote
       count
     }
@@ -286,7 +289,7 @@ function randomizeArray(array) {
 const Poll = () => {
   const copy = useRef(null);
   const router = useRouter();
-  const { id } = router.query;
+  const [id, tempTitle] = router.query.id || [];
   const [
     getPollData,
     { /* loading: pollLoading, */ data: pollData },
@@ -295,12 +298,29 @@ const Poll = () => {
     fetchPolicy: 'cache-and-network',
   });
 
+  const {
+    title, description, options, color, randomize,
+    count, cookieCount, ipCount, userCount, protection,
+  } = pollData?.poll || {};
+
   useEffect(() => {
     if (id) {
       getPollData();
     }
   }, [id]);
-  // console.log(pollData);
+
+  let actualCount;
+
+  if (protection === 'none') {
+    actualCount = count;
+  } else if (protection === 'cookie_id') {
+    actualCount = cookieCount;
+  } else if (protection === 'ip') {
+    actualCount = ipCount;
+  } else if (protection === 'user_id') {
+    actualCount = userCount;
+  }
+
   const [vote, { data: voteData }] = useMutation(VOTE, {
     update: (cache) => {
       cache.modify({
@@ -317,16 +337,8 @@ const Poll = () => {
     getPollResult,
     { /* loading: pollResultLoading, */ data: pollResultData },
   ] = useLazyQuery(POLL_RESULT, {
-    variables: { id },
+    variables: { id, protection },
     fetchPolicy: 'cache-and-network',
-    update: (cache) => {
-      cache.modify({
-        id: cache.identify(pollData.poll),
-        fields: {
-          count: (countValue) => countValue + 1,
-        },
-      });
-    },
   });
   // console.log(pollResultData);
 
@@ -344,10 +356,6 @@ const Poll = () => {
     }
   }, [voteData?.vote]);
 
-  const {
-    title, description, options, color, randomize, count,
-  } = pollData?.poll || {};
-
   const orderedOptions = useMemo(() => {
     if (randomize) {
       return randomizeArray(options);
@@ -361,6 +369,14 @@ const Poll = () => {
     }
   }, [color]);
 
+  useEffect(() => {
+    if (title) {
+      router.replace(`/poll/${id}/${
+        title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')
+      }`);
+    }
+  }, [title]);
+
   const copyDiv = () => {
     if (copy.current) {
       const range = document.createRange();
@@ -372,7 +388,10 @@ const Poll = () => {
     }
   };
 
-  const { rankings, rankedPairs, ratioPercents } = calc(pollResultData?.pollResult, orderedOptions);
+  const { rankings, rankedPairs, ratioPercents } = useMemo(
+    () => calc(pollResultData?.pollResult, orderedOptions),
+    [pollResultData?.pollResult, orderedOptions],
+  );
 
   let submit = null;
   if (submitted) {
@@ -402,7 +421,7 @@ const Poll = () => {
       <Card>
         <Title>
           <Question>
-            {title}
+            {title || tempTitle?.replaceAll('_', ' ')}
           </Question>
           {pollResultData && (
             <OrderButton onClick={toggleSortResults}>
@@ -498,16 +517,18 @@ const Poll = () => {
         <CardBottom>
           {submit}
           <TotalVotes>
-            {(count || 0) + (count === 1 ? ' vote' : ' votes')}
+            {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
           </TotalVotes>
           <Spacer />
-          <SeeResultsButton
-            onClick={getPollResult}
-          >
-            {pollResultData
-              ? <span className="material-icons">sync</span>
-              : 'See Results'}
-          </SeeResultsButton>
+          {pollData && (
+            <SeeResultsButton
+              onClick={getPollResult}
+            >
+              {pollResultData
+                ? <span className="material-icons">sync</span>
+                : 'See Results'}
+            </SeeResultsButton>
+          )}
           <CopyContainer>
             <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
             <CopyText ref={copy}>{`rnkd.pl/${id}`}</CopyText>

@@ -78,8 +78,8 @@ export default function rankedPairsCalc(pollResult = [], options = []) {
   });
 
   const rankedPairs = Object.values(pairs).sort((pair1, pair2) => {
-    const pair1Options = Object.keys(pair1);
-    const pair2Options = Object.keys(pair2);
+    const pair1Options = Object.keys(pair1).sort();
+    const pair2Options = Object.keys(pair2).sort();
     let pair1Winner;
     let pair2Winner;
     let pair1Loser;
@@ -112,7 +112,7 @@ export default function rankedPairsCalc(pollResult = [], options = []) {
   let tieResolver = {};
 
   rankedPairs.forEach((pair, index) => {
-    const option = Object.keys(pair);
+    const option = Object.keys(pair).sort();
     let winner;
     let loser;
     if (pair[option[0]] > pair[option[1]]) {
@@ -127,7 +127,7 @@ export default function rankedPairsCalc(pollResult = [], options = []) {
         let winner2;
         let loser2;
         const pair2 = rankedPairs[index + 1];
-        const option2 = Object.keys(pair2);
+        const option2 = Object.keys(pair2).sort();
         if (pair2[option2[0]] > pair2[option2[1]]) {
           [winner2, loser2] = option2;
         } else if (pair2[option2[0]] < pair2[option2[1]]) {
@@ -139,7 +139,7 @@ export default function rankedPairsCalc(pollResult = [], options = []) {
           if (!Object.keys(tieResolver).length) {
             // tie resolver not already initialized
             tieResolver = {};
-            Object.entries(nodes).forEach(([key, values]) => {
+            Object.entries(nodes).sort().forEach(([key, values]) => {
               tieResolver[key] = {
                 above: [...values.above],
                 below: [...values.below],
@@ -202,7 +202,7 @@ export default function rankedPairsCalc(pollResult = [], options = []) {
     rankings[rankings.length - 1].forEach((pair1) => {
       rankings[rankings.length - 2].forEach((pair2) => {
         const key = getKey(pair1, pair2);
-        const optionKeys = Object.keys(pairs[key]);
+        const optionKeys = Object.keys(pairs[key]).sort();
         if (pairs[key][optionKeys[0]] > pairs[key][optionKeys[1]]) {
           winTotal += pairs[key][optionKeys[0]];
           loseTotal += pairs[key][optionKeys[1]];
