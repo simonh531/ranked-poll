@@ -2,6 +2,7 @@ import React, {
   useState, useEffect, Fragment, useRef, useMemo,
 } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import {
   gql, useMutation, useLazyQuery,
 } from '@apollo/client';
@@ -132,13 +133,13 @@ const Main = styled.main`
 const Title = styled.div`
   display: flex;
   border-bottom: 1px solid black;
-  margin: 8px 0;
+  margin-bottom: 4px;
 `;
 
 const Question = styled.h1`
   margin: 0;
   font-family: Merriweather, serif;
-  padding: 4px;
+  padding: 4px 0;
   flex: 1;
 `;
 
@@ -149,7 +150,7 @@ const Ranking = styled.div`
 const CardBottom = styled.div`
   display: flex;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: 16px;
   align-items: center;
 `;
 
@@ -158,6 +159,7 @@ const Spacer = styled.div`
 `;
 
 const TotalVotes = styled.div`
+  margin-left: 1ch;
   font-family: Open Sans, sans-serif;
   display: flex;
   align-items: center;
@@ -177,7 +179,7 @@ const CopyContainer = styled.div`
 `;
 
 const CopyButton = styled.button`
-  padding: 0 4px;
+  padding: 0 6px;
   margin: 0;
   border: 1px solid grey;
   border-right: 0;
@@ -199,7 +201,8 @@ const CopyButton = styled.button`
 
 const CopyText = styled.div`
   border: 1px solid grey;
-  padding: 4px;
+  padding: 8px 4px;
+  border-radius: 0 4px 4px 0;
   font-family: Open Sans, sans-serif;
 `;
 
@@ -228,6 +231,13 @@ const OrderIcon = styled.span`
   border: 1px solid ${(props) => (props.active ? 'black' : 'transparent')};
 `;
 
+const DateText = styled.div`
+  font-size: 0.8em;
+  opacity: 0.9;
+  font-family: Open Sans, sans-serif;
+  margin-bottom: 4px;
+`;
+
 const POLL = gql`
   query poll($id: ID!) {
     poll(id: $id) {
@@ -241,6 +251,7 @@ const POLL = gql`
       cookieCount
       ipCount
       protection
+      createdAt
     }
   }
 `;
@@ -290,6 +301,9 @@ const Poll = () => {
   const copy = useRef(null);
   const router = useRouter();
   const [id, tempTitle] = router.query.id || [];
+  const [rank, setRank] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [sortResults, setSortResults] = useState(true);
   const [
     getPollData,
     { /* loading: pollLoading, */ data: pollData },
@@ -301,6 +315,7 @@ const Poll = () => {
   const {
     title, description, options, color, randomize,
     count, cookieCount, ipCount, userCount, protection,
+    createdAt,
   } = pollData?.poll || {};
 
   useEffect(() => {
@@ -330,6 +345,13 @@ const Poll = () => {
         },
       });
     },
+    variables: {
+      input: {
+        user: null,
+        pollId: id,
+        vote: rank,
+      },
+    },
   });
   // console.log(voteData);
 
@@ -341,10 +363,6 @@ const Poll = () => {
     fetchPolicy: 'cache-and-network',
   });
   // console.log(pollResultData);
-
-  const [rank, setRank] = useState([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [sortResults, setSortResults] = useState(true);
 
   const toggleSortResults = () => {
     setSortResults(!sortResults);
@@ -401,15 +419,7 @@ const Poll = () => {
       <SubmitButton
         type="button"
         disabled={!rank.length}
-        onClick={() => vote({
-          variables: {
-            input: {
-              user: null,
-              pollId: id,
-              vote: rank,
-            },
-          },
-        })}
+        onClick={vote}
       >
         Vote
       </SubmitButton>
@@ -418,6 +428,17 @@ const Poll = () => {
 
   return (
     <Main>
+      <Head>
+        <title>
+          {title && `${title} — `}
+          Ranked Poll
+        </title>
+        <meta name="description" key="description" content={`${title} — ${options && options.join('— ')}`} />
+        <meta property="og:url" content={`rankedpoll.com/${id}`} key="ogurl" />
+        <meta property="og:title" content={title} key="ogtitle" />
+        <meta property="og:description" content={options && options.join('— ')} key="ogdesc" />
+        <link rel="canonical" href={`https://rankedpoll.com/${id}`} key="canonical" />
+      </Head>
       <Card>
         <Title>
           <Question>
@@ -429,6 +450,11 @@ const Poll = () => {
             </OrderButton>
           )}
         </Title>
+        <DateText>
+          {createdAt && new Date(parseInt(createdAt, 10)).toLocaleString(undefined, {
+            dateStyle: 'medium', timeStyle: 'short',
+          })}
+        </DateText>
         {description ? (
           <Description>
             {description}
@@ -531,7 +557,7 @@ const Poll = () => {
           )}
           <CopyContainer>
             <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
-            <CopyText ref={copy}>{`rnkd.pl/${id}`}</CopyText>
+            <CopyText ref={copy}>{`rnkd.pl/${id || ''}`}</CopyText>
           </CopyContainer>
         </CardBottom>
         {pollResultData ? (

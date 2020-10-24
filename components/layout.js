@@ -79,10 +79,20 @@ export default function Layout({ children }) {
   return (
     <Screen>
       <Head>
-        <title>Ranked Poll</title>
-        <link rel="stylesheet" type="text/css" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css" />
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Merriweather&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <title>Ranked Poll — Share ranked choice polls</title>
+        <meta name="description" key="description" content="Instantly create and share ranked choice polls for more accurate preference data!" />
+        {/* <script type="application/ld+json">
+          {
+            "@context" : "http://schema.org",
+            "name" : "Ranked Poll",
+            "description" : "Instantly create and share ranked choice polls for more accurate preference data!"
+          }
+        </script> */}
+        {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
+        <meta property="og:url" content="rankedpoll.com" key="ogurl" />
+        <meta property="og:title" content="Share ranked choice polls" key="ogtitle" />
+        <meta property="og:description" content="Instantly create and share ranked choice polls for more accurate data on peoples' preferences!" key="ogdesc" />
+        <link rel="canonical" href="https://rankedpoll.com" key="canonical" />
       </Head>
       <Nav>
         <Link href="/" passHref><MainA>Ranked Poll</MainA></Link>

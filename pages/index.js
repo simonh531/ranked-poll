@@ -91,7 +91,7 @@ const Why = styled.a`
   margin: 0 0.5ch;
   font-size: 0.8em;
   background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});
-  filter: saturate(300%);
+  filter: hue-rotate(30deg) contrast(1.5);
   padding: 4px;
   border-radius: 4px;
   text-shadow: 0 0 2px black;
@@ -106,7 +106,7 @@ const Why = styled.a`
   }
 
   :active {
-    filter: saturate(300%) brightness(80%);
+    filter:hue-rotate(30deg) contrast(1.5) brightness(80%);
   }
 `;
 
@@ -116,7 +116,10 @@ const Question = styled.input`
   border-bottom: 1px solid black;
   margin-bottom: 8px;
   width: 100%;
-  padding: 4px;
+  padding: 4px 0;
+  z-index: 1;
+  background-color: white;
+  position: relative;
 
   :focus {
     outline: none;
@@ -131,13 +134,14 @@ const DescriptionBox = styled(Description)`
 const DescriptionTextarea = styled.textarea`
   width: 100%;
   height: 100%;
-  padding: 4px;
+  padding: 4px 0;
   border: 0;
   position: absolute;
   top: 0;
   left: 0;
   overflow: hidden;
   resize: none;
+  outline: 0;
 `;
 
 const Options = styled.div`
@@ -145,6 +149,7 @@ const Options = styled.div`
 `;
 
 const Option = styled.div`
+  margin: 8px 0;
   font-family: Open Sans, sans-serif;
 `;
 
@@ -161,6 +166,21 @@ const ColorInput = styled.input`
   width: 6ch;
 `;
 
+const Label = styled.label`
+  display: block;
+  position: relative;
+  padding-top: 1em;
+`;
+
+const LabelText = styled.span`
+  position: absolute;
+  top: ${(props) => (props.show ? '0' : '1em')};
+  font-size: 0.8em;
+  color: #444444;
+  font-family: Open Sans, sans-serif;
+  transition: top 0.1s;
+`;
+
 const CREATE_POLL = gql`
   mutation createPoll($input: CreatePollInput!) {
     createPoll(input: $input) {
@@ -173,18 +193,31 @@ const createCheckFunc = (value, set) => () => {
   set(!value);
 };
 
+const createOnBlur = (set, value) => () => {
+  if (value) {
+    set(true);
+  } else {
+    set(false);
+  }
+};
+
+const createOnFocus = (set) => () => set(true);
+
 const Index = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [randomize, setRandomize] = useState(true);
-  const [colorName, setColorName] = useState('Sky Blue');
+  const [colorName, setColorName] = useState(Object.keys(Colors)[0]);
   const [customColor, setCustomColor] = useState(false);
   const [options, setOptions] = useState({
     [new Date().valueOf()]: '',
     [new Date().valueOf() + 1]: '',
   });
   const [protection, setProtection] = useState('cookie_id');
+  const [showTitleLabel, setShowTitleLabel] = useState(false);
+  const [showDescriptionLabel, setShowDescriptionLabel] = useState(false);
   const firstRender = useRef(true);
+
   const themeColor = useReactiveVar(themeColorVar);
   const [createPoll, { data }] = useMutation(CREATE_POLL, {
     variables: {
@@ -273,7 +306,6 @@ const Index = () => {
             onChange={onChange}
             onCancel={onCancel}
             lastOne={lastOne}
-            disabled
           />
         );
       },
@@ -284,32 +316,51 @@ const Index = () => {
   return (
     <Main>
       <Title>
-        Instantly create ranked choice polls!
+        Share ranked choice polls!
         <Link href="/about/" passHref><Why>Why?</Why></Link>
       </Title>
       <Card>
-        <div>
-          <Question type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter your question" />
-        </div>
-        <div>
+        <Label htmlFor="question">
+          <LabelText show={showTitleLabel}>Question</LabelText>
+          <Question
+            type="text"
+            id="question"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onFocus={createOnFocus(setShowTitleLabel)}
+            onBlur={createOnBlur(setShowTitleLabel, title)}
+            placeholder="Enter your question"
+          />
+        </Label>
+        <Label htmlFor="details">
+          <LabelText show={showDescriptionLabel}>Details</LabelText>
           <DescriptionBox>
             {description || 'Enter any clarifying details. Feel free to leave blank'}
-            <DescriptionTextarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter any clarifying details. Feel free to leave blank" />
+            <DescriptionTextarea
+              id="details"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onFocus={createOnFocus(setShowDescriptionLabel)}
+              onBlur={createOnBlur(setShowDescriptionLabel, description)}
+              placeholder="Enter any clarifying details. Feel free to leave blank"
+            />
           </DescriptionBox>
-        </div>
+        </Label>
         <div>
           {optionsElement}
         </div>
         <Options>
           <Option>
-            Double voting protection:
-            {' '}
-            <select onChange={(e) => setProtection(e.target.value)} value={protection}>
-              <option value="cookie_id">Cookie id</option>
-              <option value="ip">IP address</option>
-              {/* <option value="user_id">Sign in</option> */}
-              <option value="none">None</option>
-            </select>
+            <label htmlFor="protection">
+              Double voting protection:
+              {' '}
+              <select id="protection" onChange={(e) => setProtection(e.target.value)} value={protection}>
+                <option value="cookie_id">Cookie id</option>
+                <option value="ip">IP address</option>
+                {/* <option value="user_id">Sign in</option> */}
+                <option value="none">None</option>
+              </select>
+            </label>
           </Option>
           <Option>
             <label htmlFor="randomize">
@@ -323,40 +374,42 @@ const Index = () => {
             </Tooltip>
           </Option>
           <Option>
-            Color:
-            {customColor ? (
-              <CustomColor>
-                <label htmlFor="colorR">
-                  R
-                  <ColorInput id="colorR" type="number" max="255" value={themeColor[0]} onChange={setColor(0)} />
-                </label>
+            <label htmlFor="color">
+              Color:
+              {customColor ? (
+                <CustomColor>
+                  <label htmlFor="colorR">
+                    R
+                    <ColorInput id="colorR" type="number" max="255" value={themeColor[0]} onChange={setColor(0)} />
+                  </label>
+                  {' '}
+                  <label htmlFor="colorG">
+                    G
+                    <ColorInput id="colorG" type="number" max="255" value={themeColor[1]} onChange={setColor(1)} />
+                  </label>
+                  {' '}
+                  <label htmlFor="colorB">
+                    B
+                    <ColorInput id="colorB" type="number" max="255" value={themeColor[2]} onChange={setColor(2)} />
+                  </label>
+                </CustomColor>
+              )
+                : (
+                  <ColorSelect id="color" onChange={changeColor} value={colorName}>
+                    {Object.keys(Colors).map((name) => <option key={name}>{name}</option>)}
+                  </ColorSelect>
+                )}
+              {/* <label htmlFor="customColor">
+                <input
+                  id="customColor"
+                  type="checkbox"
+                  checked={customColor}
+                  onChange={createCheckFunc(customColor, setCustomColor)}
+                />
                 {' '}
-                <label htmlFor="colorG">
-                  G
-                  <ColorInput id="colorG" type="number" max="255" value={themeColor[1]} onChange={setColor(1)} />
-                </label>
-                {' '}
-                <label htmlFor="colorB">
-                  B
-                  <ColorInput id="colorB" type="number" max="255" value={themeColor[2]} onChange={setColor(2)} />
-                </label>
-              </CustomColor>
-            )
-              : (
-                <ColorSelect onChange={changeColor} value={colorName}>
-                  {Object.keys(Colors).map((name) => <option key={name}>{name}</option>)}
-                </ColorSelect>
-              )}
-            {/* <label htmlFor="customColor">
-              <input
-                id="customColor"
-                type="checkbox"
-                checked={customColor}
-                onChange={createCheckFunc(customColor, setCustomColor)}
-              />
-              {' '}
-              Custom
-            </label> */}
+                Custom
+              </label> */}
+            </label>
           </Option>
         </Options>
         <SubmitButton

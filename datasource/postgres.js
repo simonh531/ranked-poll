@@ -19,7 +19,7 @@ export default class PostgresDB extends DataSource {
     this.context = config.context;
   }
 
-  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors['Sky Blue'], randomize = true, protection = 'cookie_id') {
+  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors[Object.keys(Colors)[0]], randomize = true, protection = 'cookie_id') {
     if (options.length) {
       const id = shortid.generate();
       const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize, protection) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
@@ -37,7 +37,7 @@ export default class PostgresDB extends DataSource {
 
   async getPoll(id) {
     if (id) {
-      const text = 'SELECT poll.*, COUNT(*), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
+      const text = 'SELECT poll.*, poll.created_at as "createdAt", COUNT(*), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
       const values = [id];
       try {
         const res = await this.pool.query(text, values);

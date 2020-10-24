@@ -42,7 +42,7 @@ const About = () => {
       && themeColor[1] === 255
       && themeColor[2] === 255
     ) {
-      themeColorVar(Colors['Sky Blue']);
+      themeColorVar(Colors[Object.keys(Colors)[0]]);
     }
   }, [themeColor]);
 

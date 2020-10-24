@@ -16,13 +16,11 @@ export const Description = styled.div`
   position: relative;
   font-family: Open Sans, sans-serif;
   width: 100%;
-  padding: 4px;
+  padding: 4px 0;
   white-space: pre-wrap;
 `;
 
 export const SubmitButton = styled.button`
-  margin-right: 1ch;
-  margin-bottom: 4px;
   padding: 6px 12px;
   border-radius: 4px;
   font-family: Open Sans, sans-serif;
@@ -32,7 +30,7 @@ export const SubmitButton = styled.button`
   border: 0;
   background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});;
   color: white;
-  filter: saturate(300%);
+  filter: hue-rotate(30deg) contrast(1.5);
   cursor: pointer;
   box-shadow: 0 0 1px rgba(0,0,0,0.5);
   letter-spacing: 1px;
@@ -42,6 +40,6 @@ export const SubmitButton = styled.button`
   }
 
   :active {
-    filter: saturate(300%) brightness(80%);
+    filter: hue-rotate(30deg) contrast(1.5) brightness(80%);
   }
 `;

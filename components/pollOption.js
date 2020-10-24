@@ -6,28 +6,40 @@ import { themeColorVar } from './layout';
 const Container = styled.div`
   display: flex;
   align-items: center;
-  margin: 0.5em 0;
+  margin: 12px 0;
 `;
 
 const Box = styled.input`
-  margin-right: 1ch;
+  width: 16px;
+  height: 16px;
   pointer-events: ${(props) => (props.clickThrough ? 'none' : 'auto')};
 `;
 
-const Rank = styled.div`
+const Rank = styled.span`
   font-size: 1.6em;
-  margin-right: 1ch;
 `;
 
-const Name = styled.label`
+const Label = styled.label`
+  display: flex;
+  align-items: center;
+`;
+
+const Name = styled.span`
   font-family: Open Sans, sans-serif;
+  margin-left: 1ch;
+`;
+
+const InputLabel = styled.label`
+  flex: 2;
 `;
 
 const Input = styled.input`
+  padding: 4px 0;
+  margin-left: 1ch;
   font-family: Open Sans, sans-serif;
-  flex: 1;
   border: 0;
   border-bottom: 1px solid black;
+  width: 100%;
 
   :focus {
     outline: none;
@@ -73,7 +85,15 @@ const Bar = styled.div`
   height: calc(100% - 12px);
   margin: 6px 0;
   box-shadow: 0 0 2px 2px rgba(0,0,0,0.5);
-  filter: saturate(300%);
+  filter: hue-rotate(30deg) contrast(1.5);
+`;
+
+const HiddenText = styled.span`
+  display: block;
+  height: 0;
+  overflow: hidden;
+  user-select: none;
+  color: transparent;
 `;
 
 const PollOption = ({
@@ -83,12 +103,22 @@ const PollOption = ({
 }) => (
   <div>
     <Container>
-      {rank ? <Rank>{rank}</Rank> : (
-        <Box type="checkbox" tabIndex="-1" id={id} active={false} onClick={boxClick} clickThrough={disabled} />
+      {onChange ? (
+        <>
+          <span className="material-icons">check_box_outline_blank</span>
+          <InputLabel htmlFor={id}>
+            <HiddenText>Answer</HiddenText>
+            <Input type="text" id={id} placeholder="Enter an answer" value={value} onChange={onChange} />
+          </InputLabel>
+        </>
+      ) : (
+        <Label htmlFor={id}>
+          {rank ? <Rank>{rank}</Rank> : (
+            <Box type="checkbox" onClick={boxClick} tabIndex="-1" id={id} active={false} />
+          )}
+          <Name>{name}</Name>
+        </Label>
       )}
-      {onChange
-        ? <Input type="text" placeholder="Enter an answer" value={value} onChange={onChange} />
-        : <Name htmlFor={id}>{name}</Name>}
       <Toolbar>
         {onChange && !lastOne ? (
           <Icon className="material-icons" onClick={onCancel}>
