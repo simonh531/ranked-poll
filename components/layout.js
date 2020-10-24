@@ -75,12 +75,14 @@ const Spacer = styled.div`
   flex: 1;
 `;
 
+const description = 'Instantly create and share ranked choice polls for more accurate preference data!';
+
 export default function Layout({ children }) {
   return (
     <Screen>
       <Head>
         <title>Ranked Poll — Share ranked choice polls</title>
-        <meta name="description" key="description" content="Instantly create and share ranked choice polls for more accurate preference data!" />
+        <meta name="description" key="description" content={description} />
         {/* <script type="application/ld+json">
           {
             "@context" : "http://schema.org",
@@ -90,8 +92,8 @@ export default function Layout({ children }) {
         </script> */}
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
         <meta property="og:url" content="rankedpoll.com" key="ogurl" />
-        <meta property="og:title" content="Share ranked choice polls" key="ogtitle" />
-        <meta property="og:description" content="Instantly create and share ranked choice polls for more accurate data on peoples' preferences!" key="ogdesc" />
+        <meta property="og:title" content="Ranked Poll" key="ogtitle" />
+        <meta property="og:description" content={description} key="ogdesc" />
         <link rel="canonical" href="https://rankedpoll.com" key="canonical" />
       </Head>
       <Nav>

@@ -11,6 +11,7 @@ import styled from 'styled-components';
 import PollOption from '../../components/pollOption';
 import { themeColorVar } from '../../components/layout';
 import { Card, Description, SubmitButton } from '../../style/card';
+import Pool from '../../postgresPool';
 import calc from '../../rankedPairsCalc';
 
 const Header = styled.h3`
@@ -242,11 +243,7 @@ const POLL = gql`
   query poll($id: ID!) {
     poll(id: $id) {
       id
-      title
       description
-      options
-      color
-      randomize
       count
       cookieCount
       ipCount
@@ -265,6 +262,8 @@ const POLL_RESULT = gql`
     poll(id: $id) {
       id
       count
+      cookieCount
+      ipCount
     }
   }
 `;
@@ -297,10 +296,11 @@ function randomizeArray(array) {
   return arrayCopy;
 }
 
-const Poll = () => {
+const Poll = ({
+  id, title, options, randomize, color,
+}) => {
   const copy = useRef(null);
   const router = useRouter();
-  const [id, tempTitle] = router.query.id || [];
   const [rank, setRank] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [sortResults, setSortResults] = useState(true);
@@ -313,9 +313,7 @@ const Poll = () => {
   });
 
   const {
-    title, description, options, color, randomize,
-    count, cookieCount, ipCount, userCount, protection,
-    createdAt,
+    description, count, cookieCount, ipCount, userCount, protection, createdAt,
   } = pollData?.poll || {};
 
   useEffect(() => {
@@ -442,7 +440,7 @@ const Poll = () => {
       <Card>
         <Title>
           <Question>
-            {title || tempTitle?.replaceAll('_', ' ')}
+            {title}
           </Question>
           {pollResultData && (
             <OrderButton onClick={toggleSortResults}>
@@ -569,6 +567,29 @@ const Poll = () => {
       </Card>
     </Main>
   );
+};
+
+export const getStaticPaths = async () => ({
+  paths: [],
+  fallback: true,
+});
+
+export const getStaticProps = async ({ params }) => {
+  const text = 'SELECT title, options, randomize, color FROM poll WHERE id = $1';
+  const values = [params.id[0]];
+  try {
+    const res = await Pool.query(text, values);
+    const {
+      title, options, randomize, color,
+    } = res.rows[0];
+    return {
+      props: {
+        id: params.id[0], title, options, randomize, color,
+      },
+    };
+  } catch (err) {
+    return null;
+  }
 };
 
 export default Poll;
