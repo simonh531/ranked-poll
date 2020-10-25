@@ -297,7 +297,7 @@ function randomizeArray(array) {
 }
 
 const Poll = ({
-  id, title, options, randomize, color,
+  id, title, options, randomize, color, redirect,
 }) => {
   const copy = useRef(null);
   const router = useRouter();
@@ -392,6 +392,12 @@ const Poll = ({
       }`);
     }
   }, [title]);
+
+  useEffect(() => {
+    if (redirect) {
+      router.replace('/');
+    }
+  }, [redirect]);
 
   const copyDiv = () => {
     if (copy.current) {
@@ -579,12 +585,21 @@ export const getStaticProps = async ({ params }) => {
   const values = [params.id[0]];
   try {
     const res = await Pool.query(text, values);
-    const {
-      title, options, randomize, color,
-    } = res.rows[0];
+    if (res.rows.length) {
+      const {
+        title, options, randomize, color,
+      } = res.rows[0];
+
+      return {
+        props: {
+          id: params.id[0], title, options, randomize, color,
+        },
+      };
+    }
+
     return {
       props: {
-        id: params.id[0], title, options, randomize, color,
+        redirect: true,
       },
     };
   } catch (err) {
