@@ -284,19 +284,25 @@ const Tab = ({ active, link, children }) => {
 const About = () => {
   const router = useRouter();
   const hash = router.asPath.toLowerCase().substr(7);
-  let active;
-  let content = <Intro />;
+  const [active, setActive] = useState('');
+  const [content, setContent] = useState(<Intro />);
 
-  if (hash === 'method') {
-    active = 'method';
-    content = <Method />;
-  } else if (hash === 'calculation') {
-    active = 'calculation';
-    content = <Calculation />;
-  } else if (hash === 'protection') {
-    active = 'protection';
-    content = <Protection />;
-  }
+  useEffect(() => {
+    if (hash === 'method') {
+      setActive('method');
+      setContent(<Method />);
+    } else if (hash === 'calculation') {
+      setActive('calculation');
+      setContent(<Calculation />);
+    } else if (hash === 'protection') {
+      setActive('protection');
+      setContent(<Protection />);
+    } else {
+      setActive('');
+      setActive(<Intro />);
+    }
+  }, [hash]);
+
   const themeColor = useReactiveVar(themeColorVar);
 
   useEffect(() => {
