@@ -22,7 +22,7 @@ const Main = styled.main`
 const Title = styled.h1`
   margin: 0;
   font-family: Righteous, cursive;
-  font-size: 3.2em;
+  font-size: 3em;
   text-align: center;
   color: black;
 `;
@@ -81,7 +81,7 @@ const Intro = () => (
       Now you might be wondering how ranked voting differs from simpler voting methods (such as plurality, or First-Past-the-Post): Ranked voting tells you more about nuances that are often hidden when looking at the results, allowing you to make better conclusions about your data.
     </P>
     <P>
-      For example, you might be curious about how much people like certain flavors of ice cream - so you put out a questionnaire: &quot;Which of these is your favorite flavor of ice cream: Chocolate, Vanilla, or Strawberry?&quot; Your average plurality-style poll might tell you that chocolate wins then followed by vanilla and strawberry. However, a vote that asks a respondent to answer in what order do they prefer each of these flavors can tell a different story even if the respondents are the same. It could show that the majority of respondents ranked strawberry second and is a good middle ground that everyone would be happy with.
+      For example, you might be curious about how much people like certain flavors of ice cream - so you put out a questionnaire: &quot;Which of these is your favorite flavor of ice cream: Chocolate, Vanilla, or Strawberry?&quot; Your average plurality-style poll might tell you that the favorite is strawberry followed by chocolate and vanilla. However, a vote that asks a respondent to answer in what order do they prefer each of these flavors can reveal a different story. It could show that the majority of respondents ranked vanilla second and is a good middle ground that everyone would be happy with.
     </P>
     <P>
       With an even larger set of data, ranked voting can help identify these trends that are invisible to other voting methods. So what are you waiting for? Give it a try!
