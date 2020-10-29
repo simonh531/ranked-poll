@@ -434,13 +434,13 @@ const Poll = ({
     <Main>
       <Head>
         <title>
-          {title && `${title} — `}
+          {title && `${title} | `}
           Ranked Poll
         </title>
-        <meta name="description" key="description" content={`${title} — ${options && options.join('— ')}`} />
+        <meta name="description" key="description" content={`${title} | ${options && options.join('| ')}`} />
         <meta property="og:url" content={`rankedpoll.com/${id}`} key="ogurl" />
         <meta property="og:title" content={title} key="ogtitle" />
-        <meta property="og:description" content={options && options.join('— ')} key="ogdesc" />
+        <meta property="og:description" content={options && options.join('| ')} key="ogdesc" />
         <link rel="canonical" href={`https://rankedpoll.com/${id}`} key="canonical" />
       </Head>
       <Card>

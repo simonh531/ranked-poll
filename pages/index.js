@@ -9,7 +9,7 @@ import PollOption from '../components/pollOption';
 import { themeColorVar } from '../components/layout';
 
 import { Card, Description, SubmitButton } from '../style/card';
-import Colors from '../style/colors';
+import Colors, { toSecondary } from '../style/colors';
 
 const TooltipArea = styled.button`
   padding: 0;
@@ -72,26 +72,39 @@ const Main = styled.main`
   align-items: center;
 `;
 
-const Title = styled.div`
-  margin: 20px;
+const Title = styled.h1`
+  margin: 16px 0 4px;
   width: 60%;
   min-width: 320px;
-  font-family: Merriweather, serif;
-  font-size: 2.4em;
+  font-family: Righteous, cursive;
+  font-size: 3.2em;
   text-align: center;
   color: white;
   text-shadow: 0 0 8px black;
+  font-weight: 400;
+`;
+
+const Subtitle = styled.h2`
+  margin: 0 0 16px;
+  width: 60%;
+  min-width: 320px;
+  font-family: Merriweather, serif;
+  font-size: 1.6em;
+  text-align: center;
+  color: white;
+  text-shadow: 0 0 8px black;
+  font-weight: 400;
 
   @media (max-width: 400px) {
-    font-size: 2em;
+    line-height: 1.5;
+    font-size: 1.4em;
+    margin-bottom: 12px;
   }
 `;
 
 const Why = styled.a`
   margin: 0 0.5ch;
-  font-size: 0.8em;
-  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});
-  filter: hue-rotate(30deg) contrast(1.5);
+  background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
   padding: 4px;
   border-radius: 4px;
   text-shadow: 0 0 2px black;
@@ -106,7 +119,7 @@ const Why = styled.a`
   }
 
   :active {
-    filter:hue-rotate(30deg) contrast(1.5) brightness(80%);
+    filter: brightness(80%);
   }
 `;
 
@@ -169,12 +182,12 @@ const ColorInput = styled.input`
 const Label = styled.label`
   display: block;
   position: relative;
-  padding-top: 1em;
+  padding-top: 0.8em;
 `;
 
 const LabelText = styled.span`
   position: absolute;
-  top: ${(props) => (props.show ? '0' : '1em')};
+  top: ${(props) => (props.show ? '0' : 'calc(0.8em + 4px)')};
   font-size: 0.8em;
   color: #444444;
   font-family: Open Sans, sans-serif;
@@ -315,10 +328,11 @@ const Index = () => {
 
   return (
     <Main>
-      <Title>
-        Share ranked choice polls!
+      <Title>Ranked Poll</Title>
+      <Subtitle>
+        Share ranked vote polls!
         <Link href="/about/" passHref><Why>Why?</Why></Link>
-      </Title>
+      </Subtitle>
       <Card>
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
@@ -355,7 +369,7 @@ const Index = () => {
               Double voting protection:
               {' '}
               <select id="protection" onChange={(e) => setProtection(e.target.value)} value={protection}>
-                <option value="cookie_id">Cookie id</option>
+                <option value="cookie_id">Browser cookie</option>
                 <option value="ip">IP address</option>
                 {/* <option value="user_id">Sign in</option> */}
                 <option value="none">None</option>

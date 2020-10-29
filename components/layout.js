@@ -3,13 +3,14 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import Head from 'next/head';
 import { makeVar, useReactiveVar } from '@apollo/client';
+import { toPrimary, toTertiary } from '../style/colors';
 
 export const themeColorVar = makeVar([255, 255, 255]);
 
 const Nav = styled.nav`
   position: relative;
   height: 40px;
-  box-shadow: 0 0 2px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 0 2px 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
   display: flex;
   align-items: center;
   background-color: rgba(255,255,255,0.9);
@@ -18,14 +19,13 @@ const Nav = styled.nav`
 const A = styled.a`
   font-family: Open Sans, sans-serif;
   font-size: 1.6em;
-  margin: 0 8px;
   color: black;
   text-decoration: none;
   cursor: pointer;
 `;
 
 const MainA = styled(A)`
-  font-family: Merriweather, serif;
+  font-family: Righteous, cursive;
   font-size: 2em;
   margin: 0 16px;
 `;
@@ -44,14 +44,15 @@ const Screen = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});
+  background-color: ${() => toPrimary(useReactiveVar(themeColorVar))};
 `;
 
 const Footer = styled.footer`
-  background-color: rgba(255,255,255,0.9);
+  background-color: rgba(0,0,0,0.5);
   padding: 8px 0;
   display: flex;
   justify-content: center;
+  color: white;
 `;
 
 const FooterCenter = styled.div`
@@ -59,10 +60,11 @@ const FooterCenter = styled.div`
   width: 60%;
   min-width: 320px;
   display: flex;
+  flex-wrap: wrap;
 `;
 
 const FooterA = styled.a`
-  color: black;
+  color: white;
   text-decoration: none;
   margin-right: 1ch;
 
@@ -75,19 +77,23 @@ const Spacer = styled.div`
   flex: 1;
 `;
 
-const description = 'Instantly create and share ranked choice polls for more accurate preference data!';
+const Copyright = styled.div`
+  /* white-space: nowrap; */
+`;
+
+const description = 'Instantly create and share ranked vote polls for more accurate preference data!';
 
 export default function Layout({ children }) {
   return (
     <Screen>
       <Head>
-        <title>Ranked Poll — Share ranked choice polls</title>
+        <title>Ranked Poll | Share ranked vote polls</title>
         <meta name="description" key="description" content={description} />
         {/* <script type="application/ld+json">
           {
             "@context" : "http://schema.org",
             "name" : "Ranked Poll",
-            "description" : "Instantly create and share ranked choice polls for more accurate preference data!"
+            "description" : "Instantly create and share ranked vote polls for more accurate preference data!"
           }
         </script> */}
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
@@ -107,14 +113,15 @@ export default function Layout({ children }) {
         <FooterCenter>
           <Link href="/" passHref><FooterA>Home</FooterA></Link>
           <Link href="/about" passHref><FooterA>About</FooterA></Link>
+          <div>contact@rankedpoll.com</div>
           <Spacer />
-          <div>
+          <Copyright>
             &copy; Copyright
             {' '}
             {new Date(Date.now()).getFullYear()}
             {' '}
             Ranked Poll
-          </div>
+          </Copyright>
         </FooterCenter>
       </Footer>
     </Screen>

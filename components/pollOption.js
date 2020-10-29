@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { themeColorVar } from './layout';
+import { toSecondary } from '../style/colors';
 
 const Container = styled.div`
   display: flex;
@@ -67,7 +68,7 @@ const GraphContainer = styled.div`
 `;
 
 const BarPercent = styled.div`
-  width: 7ch;
+  width: 8ch;
   padding-right: 1ch;
   font-family: Open Sans, sans-serif;
   text-align: right;
@@ -80,12 +81,11 @@ const BarContainer = styled.div`
 `;
 
 const Bar = styled.div`
-  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});
+  background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
   width: ${(props) => props.percent};
   height: calc(100% - 12px);
   margin: 6px 0;
   box-shadow: 0 0 2px 2px rgba(0,0,0,0.5);
-  filter: hue-rotate(30deg) contrast(1.5);
 `;
 
 const HiddenText = styled.span`

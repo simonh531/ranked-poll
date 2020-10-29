@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { themeColorVar } from '../components/layout';
+import { toSecondary } from './colors';
 
 export const Card = styled.div`
   margin: 20px 0;
@@ -28,9 +29,8 @@ export const SubmitButton = styled.button`
   font-size: 1.2em;
   text-shadow: 0 0 1px black;
   border: 0;
-  background-color: rgb(${() => useReactiveVar(themeColorVar).join(',')});;
+  background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
   color: white;
-  filter: hue-rotate(30deg) contrast(1.5);
   cursor: pointer;
   box-shadow: 0 0 1px rgba(0,0,0,0.5);
   letter-spacing: 1px;
@@ -40,6 +40,6 @@ export const SubmitButton = styled.button`
   }
 
   :active {
-    filter: hue-rotate(30deg) contrast(1.5) brightness(80%);
+    filter: brightness(80%);
   }
 `;
