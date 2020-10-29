@@ -75,10 +75,23 @@ const Bottom = styled.div`
 const Intro = () => (
   <>
     <P>
-      Hello and welcome to Ranked Poll! On this website you&apos;ll be able to create polls that offer ranked voting. The results are calculated using the ranked pairs method.
+      Hello and welcome to Ranked Poll! On this website you&apos;ll be able to create polls that offer
+      {' '}
+      <A href="https://en.wikipedia.org/wiki/Ranked_voting">ranked voting</A>
+      {' '}
+      using the
+      {' '}
+      <A href="https://en.wikipedia.org/wiki/Ranked_pairs">ranked pairs</A>
+      {' '}
+      <A href="https://en.wikipedia.org/wiki/Condorcet_method">Condorcet method</A>
+      .
     </P>
     <P>
-      Now you might be wondering how ranked voting differs from simpler voting methods (such as plurality, or First-Past-the-Post): Ranked voting tells you more about nuances that are often hidden when looking at the results, allowing you to make better conclusions about your data.
+      Now you might be wondering how ranked voting differs from simpler voting methods (
+      <A href="https://en.wikipedia.org/wiki/Plurality_voting">
+        such as plurality, or First-Past-the-Post
+      </A>
+      ): Ranked voting tells you more about nuances that are often hidden when looking at the results, allowing you to make better conclusions about your data.
     </P>
     <P>
       For example, you might be curious about how much people like certain flavors of ice cream - so you put out a questionnaire: &quot;Which of these is your favorite flavor of ice cream: Chocolate, Vanilla, or Strawberry?&quot; Your average plurality-style poll might tell you that the favorite is strawberry followed by chocolate and vanilla. However, a vote that asks a respondent to answer in what order do they prefer each of these flavors can reveal a different story. It could show that the majority of respondents ranked vanilla second and is a good middle ground that everyone would be happy with.
@@ -299,7 +312,7 @@ const About = () => {
       setContent(<Protection />);
     } else {
       setActive('');
-      setActive(<Intro />);
+      setContent(<Intro />);
     }
   }, [hash]);
 
