@@ -61,21 +61,27 @@ const MoveButton = styled.button`
   border: 0;
   background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
   color: white;
-  cursor: pointer;
   box-shadow: 0 0 1px rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: ${(props) => (props.invisible ? '0' : '1')};
-  pointer-events: ${(props) => (props.invisible ? 'none' : 'auto')};
 
-  :hover {
-    box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
-  }
+  ${(props) => {
+    if (!props.disabled) {
+      return `
+      cursor: pointer;
 
-  :active {
-    filter: brightness(80%);
-  }
+      :hover {
+        box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+      }
+
+      :active {
+        filter: brightness(80%);
+      }
+      `;
+    }
+    return 'opacity: 0.3';
+  }}
 
   ${(props) => props.smaller && `
     & > span {
@@ -121,7 +127,7 @@ const HiddenText = styled.span`
 
 const PollOption = ({
   name, value, onChange, upClick, downClick, onCancel,
-  rank, id, percent,
+  rank, id, percent, disabled,
 }) => (
   <div>
     <Container>
@@ -136,24 +142,30 @@ const PollOption = ({
       ) : (
         <>
           <Rank>{rank}</Rank>
-          <MoveButton onClick={upClick} smaller={!rank} invisible={!upClick}>
-            <span className="material-icons">
-              {rank ? 'arrow_upward' : 'thumb_up'}
-            </span>
-          </MoveButton>
-          <MoveButton onClick={downClick} smaller={!rank} invisible={!downClick}>
-            <span className="material-icons">
-              {rank ? 'arrow_downward' : 'thumb_down'}
-            </span>
-          </MoveButton>
+          {disabled ? null : (
+            <>
+              <MoveButton onClick={upClick} smaller={!rank} disabled={!upClick}>
+                <span className="material-icons">
+                  {rank ? 'arrow_upward' : 'thumb_up'}
+                </span>
+              </MoveButton>
+              <MoveButton onClick={downClick} smaller={!rank} disabled={!downClick}>
+                <span className="material-icons">
+                  {rank ? 'arrow_downward' : 'thumb_down'}
+                </span>
+              </MoveButton>
+            </>
+          )}
           <Name>{name}</Name>
         </>
       )}
-      <Delete onClick={onCancel} invisible={!onCancel}>
-        <span className="material-icons">
-          close
-        </span>
-      </Delete>
+      {disabled ? null : (
+        <Delete onClick={onCancel} invisible={!onCancel}>
+          <span className="material-icons">
+            close
+          </span>
+        </Delete>
+      )}
     </Container>
     {percent && (
       <GraphContainer>

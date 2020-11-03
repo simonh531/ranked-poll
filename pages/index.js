@@ -95,7 +95,7 @@ const Subtitle = styled.h2`
   text-shadow: 0 0 8px black;
   font-weight: 400;
 
-  @media (max-width: 400px) {
+  @media (max-width: 768px) {
     line-height: 1.5;
     font-size: 1.4em;
     margin-bottom: 12px;
@@ -182,12 +182,12 @@ const ColorInput = styled.input`
 const Label = styled.label`
   display: block;
   position: relative;
-  padding-top: 0.8em;
+  padding-top: 1em;
 `;
 
 const LabelText = styled.span`
   position: absolute;
-  top: ${(props) => (props.show ? '0' : 'calc(0.8em + 4px)')};
+  top: ${(props) => (props.show ? '0' : 'calc(1em + 4px)')};
   font-size: 0.8em;
   color: #444444;
   font-family: Open Sans, sans-serif;

@@ -198,6 +198,7 @@ const VoteSubmitted = styled.div`
 `;
 
 const CopyContainer = styled.div`
+  margin: 4px 0;
   display: flex;
 `;
 

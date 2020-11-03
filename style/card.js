@@ -31,15 +31,23 @@ export const SubmitButton = styled.button`
   border: 0;
   background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
   color: white;
-  cursor: pointer;
   box-shadow: 0 0 1px rgba(0,0,0,0.5);
   letter-spacing: 1px;
 
-  :hover {
-    box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
-  }
+  ${(props) => {
+    if (!props.disabled) {
+      return `
+      cursor: pointer;
 
-  :active {
-    filter: brightness(80%);
-  }
+      :hover {
+        box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+      }
+
+      :active {
+        filter: brightness(80%);
+      }
+      `;
+    }
+    return 'opacity: 0.3;';
+  }}
 `;
