@@ -150,7 +150,7 @@ const Question = styled.h1`
 const Bar = styled.div`
   display: flex;
   height: 1px;
-  margin: 2px 0;
+  margin: 4px 0;
 `;
 
 const BarLine = styled.div`
@@ -164,6 +164,10 @@ const BarIcon = styled.span`
   font-size: 1em;
   padding: 0 4px;
   user-select: none;
+`;
+
+const Unranked = styled.div`
+  min-height: 16px;
 `;
 
 const CardBottom = styled.div`
@@ -316,7 +320,7 @@ function randomizeArray(array) {
 }
 
 const Poll = ({
-  id, title, options, randomize, color, redirect,
+  id, title, options, randomize, color,
 }) => {
   const copy = useRef(null);
   const router = useRouter();
@@ -413,12 +417,6 @@ const Poll = ({
       }`);
     }
   }, [title]);
-
-  useEffect(() => {
-    if (redirect) {
-      router.replace('/');
-    }
-  }, [redirect]);
 
   const copyDiv = () => {
     if (copy.current) {
@@ -554,7 +552,7 @@ const Poll = ({
               </div>
             ) : null}
             {orderedOptions && (
-            <div>
+            <Unranked>
               {orderedOptions.filter(
                 (option) => !rank.includes(option) && !lowRank.includes(option),
               ).map((option) => {
@@ -574,9 +572,8 @@ const Poll = ({
                   />
                 );
               })}
-            </div>
+            </Unranked>
             )}
-
             {lowRank.length ? (
               <div>
                 <Bar>
@@ -673,8 +670,9 @@ export const getStaticProps = async ({ params }) => {
     }
 
     return {
-      props: {
-        redirect: true,
+      redirect: {
+        destination: '/',
+        permanent: false,
       },
     };
   } catch (err) {
