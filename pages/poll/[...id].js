@@ -147,12 +147,23 @@ const Question = styled.h1`
   flex: 1;
 `;
 
-const Ranking = styled.div`
-  border-bottom: 1px solid black;
+const Bar = styled.div`
+  display: flex;
+  height: 1px;
+  margin: 2px 0;
 `;
 
-const LowRanking = styled.div`
-  border-top: 1px solid black;
+const BarLine = styled.div`
+  background-color: black;
+  flex: 1;
+  height: 1px;
+`;
+
+const BarIcon = styled.span`
+  line-height: 1px;
+  font-size: 1em;
+  padding: 0 4px;
+  user-select: none;
 `;
 
 const CardBottom = styled.div`
@@ -504,7 +515,7 @@ const Poll = ({
         ) : (
           <>
             {rank.length ? (
-              <Ranking>
+              <div>
                 {rank.map((option, index) => {
                   const onCancel = () => {
                     const newRank = [...rank];
@@ -535,7 +546,12 @@ const Poll = ({
                     />
                   );
                 })}
-              </Ranking>
+                <Bar>
+                  <BarIcon className="material-icons">thumb_up</BarIcon>
+                  <BarLine />
+                  <BarIcon className="material-icons">thumb_up</BarIcon>
+                </Bar>
+              </div>
             ) : null}
             {orderedOptions && (
             <div>
@@ -562,7 +578,12 @@ const Poll = ({
             )}
 
             {lowRank.length ? (
-              <LowRanking>
+              <div>
+                <Bar>
+                  <BarIcon className="material-icons">thumb_down</BarIcon>
+                  <BarLine />
+                  <BarIcon className="material-icons">thumb_down</BarIcon>
+                </Bar>
                 {lowRank.map((option, index) => {
                   const onCancel = () => {
                     const newRank = [...lowRank];
@@ -594,7 +615,7 @@ const Poll = ({
                     />
                   );
                 })}
-              </LowRanking>
+              </div>
             ) : null}
           </>
         )}
