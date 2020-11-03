@@ -86,7 +86,10 @@ const Results = ({ pairs, votes }) => (
             {votes.map((datum) => (
               <tr key={datum.vote}>
                 <TableNumber>{datum.count}</TableNumber>
-                <td>{datum.vote.join(' > ')}</td>
+                <td>
+                  {datum.vote.join(' > ')}
+                  {datum.lowVote.length ? ` >>> ${datum.lowVote.join(' > ')}` : ''}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -146,6 +149,10 @@ const Question = styled.h1`
 
 const Ranking = styled.div`
   border-bottom: 1px solid black;
+`;
+
+const LowRanking = styled.div`
+  border-top: 1px solid black;
 `;
 
 const CardBottom = styled.div`
@@ -257,6 +264,7 @@ const POLL_RESULT = gql`
   query pollResult($id: ID!, $protection: Protection!) {
     pollResult(id: $id, protection: $protection) {
       vote
+      lowVote
       count
     }
     poll(id: $id) {
@@ -302,6 +310,7 @@ const Poll = ({
   const copy = useRef(null);
   const router = useRouter();
   const [rank, setRank] = useState([]);
+  const [lowRank, setLowRank] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [sortResults, setSortResults] = useState(true);
   const [
@@ -348,6 +357,7 @@ const Poll = ({
         user: null,
         pollId: id,
         vote: rank,
+        lowVote: lowRank,
       },
     },
   });
@@ -422,7 +432,7 @@ const Poll = ({
     submit = (
       <SubmitButton
         type="button"
-        disabled={!rank.length}
+        disabled={!rank.length && !lowRank.length}
         onClick={vote}
       >
         Vote
@@ -464,58 +474,6 @@ const Poll = ({
             {description}
           </Description>
         ) : null}
-        {rank.length && !pollResultData ? (
-          <Ranking>
-            {rank.map((option, index) => {
-              const onCancel = () => {
-                const newRank = [...rank];
-                newRank.splice(rank.indexOf(option), 1);
-                setRank(newRank);
-              };
-              const upClick = () => {
-                const newRank = [...rank];
-                newRank.splice(rank.indexOf(option), 1);
-                newRank.splice(index - 1, 0, option);
-                setRank(newRank);
-              };
-              const downClick = () => {
-                const newRank = [...rank];
-                newRank.splice(rank.indexOf(option), 1);
-                newRank.splice(index + 1, 0, option);
-                setRank(newRank);
-              };
-              return (
-                <PollOption
-                  key={option}
-                  name={option}
-                  rank={index + 1}
-                  lastOne={index === rank.length - 1}
-                  onCancel={onCancel}
-                  upClick={upClick}
-                  downClick={downClick}
-                  disabled={submitted}
-                />
-              );
-            })}
-          </Ranking>
-        ) : null}
-        {orderedOptions && !pollResultData ? (
-          <div>
-            {orderedOptions.filter((option) => !rank.includes(option)).map((option) => {
-              const boxClick = () => {
-                setRank([...rank, option]);
-              };
-              return (
-                <PollOption
-                  key={option}
-                  name={option}
-                  boxClick={boxClick}
-                  disabled={submitted}
-                />
-              );
-            })}
-          </div>
-        ) : null}
         {pollResultData ? (
           <div>
             {[...orderedOptions].sort((option1, option2) => {
@@ -543,7 +501,103 @@ const Poll = ({
               );
             })}
           </div>
-        ) : null}
+        ) : (
+          <>
+            {rank.length ? (
+              <Ranking>
+                {rank.map((option, index) => {
+                  const onCancel = () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    setRank(newRank);
+                  };
+                  const upClick = index !== 0 ? () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    newRank.splice(index - 1, 0, option);
+                    setRank(newRank);
+                  } : null;
+                  const downClick = index !== rank.length - 1 ? () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    newRank.splice(index + 1, 0, option);
+                    setRank(newRank);
+                  } : null;
+                  return (
+                    <PollOption
+                      key={option}
+                      name={option}
+                      rank={index + 1}
+                      onCancel={onCancel}
+                      upClick={upClick}
+                      downClick={downClick}
+                      disabled={submitted}
+                    />
+                  );
+                })}
+              </Ranking>
+            ) : null}
+            {orderedOptions && (
+            <div>
+              {orderedOptions.filter(
+                (option) => !rank.includes(option) && !lowRank.includes(option),
+              ).map((option) => {
+                const upClick = () => {
+                  setRank([...rank, option]);
+                };
+                const downClick = () => {
+                  setLowRank([option, ...lowRank]);
+                };
+                return (
+                  <PollOption
+                    key={option}
+                    name={option}
+                    upClick={upClick}
+                    downClick={downClick}
+                    disabled={submitted}
+                  />
+                );
+              })}
+            </div>
+            )}
+
+            {lowRank.length ? (
+              <LowRanking>
+                {lowRank.map((option, index) => {
+                  const onCancel = () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    setLowRank(newRank);
+                  };
+                  const upClick = index !== 0 ? () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    newRank.splice(index - 1, 0, option);
+                    setLowRank(newRank);
+                  } : null;
+                  const downClick = index !== lowRank.length - 1 ? () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    newRank.splice(index + 1, 0, option);
+                    setLowRank(newRank);
+                  } : null;
+                  return (
+                    <PollOption
+                      key={option}
+                      name={option}
+                      rank={orderedOptions.length - lowRank.length + index + 1}
+                      lastOne={index === rank.length - 1}
+                      onCancel={onCancel}
+                      upClick={upClick}
+                      downClick={downClick}
+                      disabled={submitted}
+                    />
+                  );
+                })}
+              </LowRanking>
+            ) : null}
+          </>
+        )}
         <CardBottom>
           {submit}
           <TotalVotes>

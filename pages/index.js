@@ -260,9 +260,9 @@ const Index = () => {
 
   useEffect(() => {
     if (firstRender.current && !(
-      themeColor[0] === 255
-      && themeColor[1] === 255
-      && themeColor[2] === 255
+      themeColor[0] === 0
+      && themeColor[1] === 110
+      && themeColor[2] === 110
     )) {
       const colorResult = Object.keys(Colors).find(
         (name) => Colors[name][0] === themeColor[0]
@@ -317,8 +317,7 @@ const Index = () => {
             key={id}
             value={pollOption.value}
             onChange={onChange}
-            onCancel={onCancel}
-            lastOne={lastOne}
+            onCancel={!lastOne && onCancel}
           />
         );
       },

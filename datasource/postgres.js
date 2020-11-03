@@ -37,7 +37,7 @@ export default class PostgresDB extends DataSource {
 
   async getPoll(id) {
     if (id) {
-      const text = 'SELECT poll.*, poll.created_at as "createdAt", COUNT(*), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
+      const text = 'SELECT poll.*, poll.created_at AS "createdAt", COUNT(*), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
       const values = [id];
       try {
         const res = await this.pool.query(text, values);
@@ -49,11 +49,11 @@ export default class PostgresDB extends DataSource {
     return null;
   }
 
-  async vote(user = null, cookie = null, ip = null, pollId, vote = []) {
-    if (pollId && vote.length) {
+  async vote(user = null, cookie = null, ip = null, pollId, vote = [], lowVote = []) {
+    if (pollId && (vote.length || lowVote.length)) {
       const uuid = uuidv4();
-      const text = 'INSERT INTO vote(id, user_id, cookie_id, ip, vote, poll_id) VALUES($1, $2, $3, $4, $5, $6)';
-      const values = [uuid, user, cookie, ip, vote, pollId];
+      const text = 'INSERT INTO vote(id, user_id, cookie_id, ip, vote, low_vote, poll_id) VALUES($1, $2, $3, $4, $5, $6, $7)';
+      const values = [uuid, user, cookie, ip, vote, lowVote, pollId];
       try {
         await this.pool.query(text, values);
         return true;
@@ -64,18 +64,14 @@ export default class PostgresDB extends DataSource {
     return false;
   }
 
-  async getPollResult(id, protection) {
+  async getPollResult(id, protection = 'none') {
     if (id) {
       let text;
       const values = [id];
       if (protection === 'none') {
-        text = 'SELECT vote, COUNT(vote) FROM vote WHERE poll_id = $1 GROUP BY vote';
-      } else if (protection === 'cookie_id') {
-        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (cookie_id) vote FROM vote WHERE poll_id = $1 ORDER BY cookie_id, created_at DESC) sub GROUP BY vote';
-      } else if (protection === 'ip') {
-        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (ip) vote FROM vote WHERE poll_id = $1 ORDER BY ip, created_at DESC) sub GROUP BY vote';
-      } else if (protection === 'user_id') {
-        text = 'SELECT *, COUNT(vote) FROM (SELECT distinct on (user_id) vote FROM vote WHERE poll_id = $1 ORDER BY user_id, created_at DESC) sub GROUP BY vote';
+        text = 'SELECT vote, low_vote AS "lowVote", COUNT(*) FROM vote WHERE poll_id = $1 GROUP BY vote, "lowVote"';
+      } else {
+        text = `SELECT *, COUNT(*) FROM (SELECT distinct on (${protection}) vote, low_vote AS "lowVote" FROM vote WHERE poll_id = $1 ORDER BY ${protection}, created_at DESC) sub GROUP BY vote, "lowVote"`;
       }
       try {
         const res = await this.pool.query(text, values);
@@ -86,10 +82,4 @@ export default class PostgresDB extends DataSource {
     }
     return null;
   }
-
-  // getPoll(id) {
-  //   return this.knex
-  //     .select('*')
-  //     .from('poll');
-  // }
 }

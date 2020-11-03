@@ -2,32 +2,24 @@ import React from 'react';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { themeColorVar } from './layout';
-import { toSecondary } from '../style/colors';
+import { toSecondary, toTertiary } from '../style/colors';
 
 const Container = styled.div`
+  height: 2.4em;
   display: flex;
   align-items: center;
-  margin: 12px 0;
-`;
-
-const Box = styled.input`
-  width: 16px;
-  height: 16px;
-  pointer-events: ${(props) => (props.clickThrough ? 'none' : 'auto')};
 `;
 
 const Rank = styled.span`
+  width: 2ch;
   font-size: 1.6em;
-`;
-
-const Label = styled.label`
-  display: flex;
-  align-items: center;
+  text-align: center;
 `;
 
 const Name = styled.span`
   font-family: Open Sans, sans-serif;
   margin-left: 1ch;
+  flex: 1;
 `;
 
 const InputLabel = styled.label`
@@ -40,25 +32,56 @@ const Input = styled.input`
   font-family: Open Sans, sans-serif;
   border: 0;
   border-bottom: 1px solid black;
-  width: 100%;
+  width: calc(100% - 1ch);
 
   :focus {
     outline: none;
   }
 `;
 
-const Toolbar = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-const Icon = styled.span`
-  margin: 0 1ch;
+const Delete = styled.button`
   font-size: 1.2em;
+  border: 0;
+  background-color: transparent;
   cursor: pointer;
   opacity: ${(props) => (props.invisible ? '0' : '1')};
   pointer-events: ${(props) => (props.invisible ? 'none' : 'auto')};
+
+  &:hover > span {
+    text-shadow: 0 0 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
+  }
+`;
+
+const MoveButton = styled.button`
+  height: 1.6em;
+  width: 1.6em;
+  margin: 0 4px;
+  border-radius: 4px;
+  text-shadow: 0 0 1px black;
+  border: 0;
+  background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 1px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: ${(props) => (props.invisible ? '0' : '1')};
+  pointer-events: ${(props) => (props.invisible ? 'none' : 'auto')};
+
+  :hover {
+    box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+  }
+
+  :active {
+    filter: brightness(80%);
+  }
+
+  ${(props) => props.smaller && `
+    & > span {
+      font-size: 1em;
+    }
+  `}
 `;
 
 const GraphContainer = styled.div`
@@ -97,9 +120,8 @@ const HiddenText = styled.span`
 `;
 
 const PollOption = ({
-  name, value, onChange, upClick, downClick, onCancel, lastOne,
-  boxClick = () => {}, rank, disabled, id,
-  percent,
+  name, value, onChange, upClick, downClick, onCancel,
+  rank, id, percent,
 }) => (
   <div>
     <Container>
@@ -112,42 +134,35 @@ const PollOption = ({
           </InputLabel>
         </>
       ) : (
-        <Label htmlFor={id}>
-          {rank ? <Rank>{rank}</Rank> : (
-            <Box type="checkbox" onClick={boxClick} tabIndex="-1" id={id} active={false} />
-          )}
+        <>
+          <Rank>{rank}</Rank>
+          <MoveButton onClick={upClick} smaller={!rank} invisible={!upClick}>
+            <span className="material-icons">
+              {rank ? 'arrow_upward' : 'thumb_up'}
+            </span>
+          </MoveButton>
+          <MoveButton onClick={downClick} smaller={!rank} invisible={!downClick}>
+            <span className="material-icons">
+              {rank ? 'arrow_downward' : 'thumb_down'}
+            </span>
+          </MoveButton>
           <Name>{name}</Name>
-        </Label>
+        </>
       )}
-      <Toolbar>
-        {onChange && !lastOne ? (
-          <Icon className="material-icons" onClick={onCancel}>
-            close
-          </Icon>
-        ) : null}
-        {rank ? (
-          <>
-            <Icon className="material-icons" onClick={upClick} invisible={rank === 1 || disabled}>
-              arrow_upward
-            </Icon>
-            <Icon className="material-icons" onClick={downClick} invisible={lastOne || disabled}>
-              arrow_downward
-            </Icon>
-            <Icon className="material-icons" onClick={onCancel} invisible={disabled}>
-              close
-            </Icon>
-          </>
-        ) : null}
-      </Toolbar>
+      <Delete onClick={onCancel} invisible={!onCancel}>
+        <span className="material-icons">
+          close
+        </span>
+      </Delete>
     </Container>
-    {percent ? (
+    {percent && (
       <GraphContainer>
         <BarPercent>{percent}</BarPercent>
         <BarContainer>
           <Bar percent={percent} />
         </BarContainer>
       </GraphContainer>
-    ) : null}
+    )}
   </div>
 );
 

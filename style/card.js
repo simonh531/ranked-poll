@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { themeColorVar } from '../components/layout';
-import { toSecondary } from './colors';
+import { toSecondary, toTertiary } from './colors';
 
 export const Card = styled.div`
   margin: 20px 0;
@@ -10,7 +10,7 @@ export const Card = styled.div`
   min-width: 320px;
   background-color: white;
   border-radius: 2px;
-  box-shadow: 0 0 2px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 0 2px 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
 `;
 
 export const Description = styled.div`

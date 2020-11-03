@@ -5,7 +5,7 @@ import Head from 'next/head';
 import { makeVar, useReactiveVar } from '@apollo/client';
 import { toPrimary, toTertiary } from '../style/colors';
 
-export const themeColorVar = makeVar([255, 255, 255]);
+export const themeColorVar = makeVar([0, 110, 110]);
 
 const Nav = styled.nav`
   position: relative;

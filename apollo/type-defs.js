@@ -38,6 +38,7 @@ export default gql`
     user: ID
     pollId: ID!
     vote: [String]!
+    lowVote: [String]!
   }
 
   type SignUpPayload {
@@ -68,6 +69,7 @@ export default gql`
 
   type VoteData {
     vote: [String]!
+    lowVote: [String]!
     count: Int!
   }
 

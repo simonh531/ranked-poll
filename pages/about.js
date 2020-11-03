@@ -320,9 +320,9 @@ const About = () => {
 
   useEffect(() => {
     if (
-      themeColor[0] === 255
-      && themeColor[1] === 255
-      && themeColor[2] === 255
+      themeColor[0] === 0
+      && themeColor[1] === 110
+      && themeColor[2] === 110
     ) {
       themeColorVar(Colors[Object.keys(Colors)[0]]);
     }
