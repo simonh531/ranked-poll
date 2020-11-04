@@ -90,7 +90,7 @@ export default function Layout({ children }) {
         <title>Ranked Poll | Share Ranked Vote Polls</title>
         <meta name="description" key="description" content={description} />
         <script type="application/ld+json">
-          {'{'}
+          {`{
           "@context" : "http://schema.org",
           "@type" : "Organization",
           "logo" : "https://rankedpoll.com/android-chrome-512x512.png",
@@ -98,7 +98,7 @@ export default function Layout({ children }) {
           "name" : "Ranked Poll",
           "description" : "Instantly create and share ranked vote polls for more accurate preference data!",
           "email" : "contact@rankedpoll.com"
-          {'}'}
+          }`}
         </script>
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
         <meta property="og:url" content="rankedpoll.com" key="ogurl" />
