@@ -87,15 +87,19 @@ export default function Layout({ children }) {
   return (
     <Screen>
       <Head>
-        <title>Ranked Poll | Share ranked vote polls</title>
+        <title>Ranked Poll | Share Ranked Vote Polls</title>
         <meta name="description" key="description" content={description} />
-        {/* <script type="application/ld+json">
-          {
-            "@context" : "http://schema.org",
-            "name" : "Ranked Poll",
-            "description" : "Instantly create and share ranked vote polls for more accurate preference data!"
-          }
-        </script> */}
+        <script type="application/ld+json">
+          {'{'}
+          "@context" : "http://schema.org",
+          "@type" : "Organization",
+          "logo" : "https://rankedpoll.com/android-chrome-512x512.png",
+          "url" : "https://rankedpoll.com",
+          "name" : "Ranked Poll",
+          "description" : "Instantly create and share ranked vote polls for more accurate preference data!",
+          "email" : "contact@rankedpoll.com"
+          {'}'}
+        </script>
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
         <meta property="og:url" content="rankedpoll.com" key="ogurl" />
         <meta property="og:title" content="Ranked Poll" key="ogtitle" />

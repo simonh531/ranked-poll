@@ -438,10 +438,10 @@ const Poll = ({
           Ranked Poll
         </title>
         <meta name="description" key="description" content={`${title} | ${options && options.join('| ')}`} />
-        <meta property="og:url" content={`rankedpoll.com/${id}`} key="ogurl" />
+        <meta property="og:url" content={`rankedpoll.com/poll/${id}`} key="ogurl" />
         <meta property="og:title" content={title} key="ogtitle" />
         <meta property="og:description" content={options && options.join('| ')} key="ogdesc" />
-        <link rel="canonical" href={`https://rankedpoll.com/${id}`} key="canonical" />
+        <link rel="canonical" href={`https://rankedpoll.com/poll/${id}/${title}`} key="canonical" />
       </Head>
       <Card>
         <Title>
