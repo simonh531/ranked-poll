@@ -4,12 +4,13 @@ import React, {
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import {
-  gql, useMutation, useLazyQuery,
+  gql, useMutation, useLazyQuery, useReactiveVar,
 } from '@apollo/client';
 import styled from 'styled-components';
 
 import PollOption from '../../components/pollOption';
 import { themeColorVar } from '../../components/layout';
+import { toTertiary } from '../../style/colors';
 import { Card, Description, SubmitButton } from '../../style/card';
 import Pool from '../../postgresPool';
 import calc from '../../rankedPairsCalc';
@@ -242,11 +243,17 @@ const SeeResultsButton = styled.button`
   }
 `;
 
-const OrderButton = styled.button`
+const Button = styled.button`
   border: 0;
   padding: 0;
   background-color: transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:hover > span {
+    text-shadow: 0 0 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
+  }
 `;
 
 const OrderIcon = styled.span`
@@ -260,6 +267,24 @@ const DateText = styled.div`
   opacity: 0.9;
   font-family: Open Sans, sans-serif;
   margin-bottom: 4px;
+`;
+
+const Hint = styled.div`
+  font-family: Open Sans, sans-serif;
+  font-size: 0.8em;
+  margin-top: 4px;
+`;
+
+const LowVote = styled.label`
+  display: flex;
+  align-items: center;
+  font-family: Open Sans, sans-serif;
+  font-size: 0.9em;
+  cursor: pointer;
+`;
+
+const LowVoteIcon = styled.span`
+  font-size: 1.2em;
 `;
 
 const POLL = gql`
@@ -329,6 +354,27 @@ const Poll = ({
   const [lowRank, setLowRank] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [sortResults, setSortResults] = useState(true);
+  const [allowLowVote, setAllowLowVote] = useState(false);
+  const toggleLowVote = () => setAllowLowVote(!allowLowVote);
+  const [rankDragIndex, setRankDragIndex] = useState(null);
+  const endRankDrag = () => setRankDragIndex(null);
+  const rankDrop = (targetIndex) => {
+    const newRank = [...rank];
+    const option = rank[rankDragIndex];
+    newRank.splice(rankDragIndex, 1);
+    newRank.splice(targetIndex, 0, option);
+    setRank(newRank);
+  };
+  const [lowRankDragIndex, setLowRankDragIndex] = useState(null);
+  const endLowRankDrag = () => setLowRankDragIndex(null);
+  const lowRankDrop = (targetIndex) => {
+    const newRank = [...lowRank];
+    const option = lowRank[lowRankDragIndex];
+    newRank.splice(lowRankDragIndex, 1);
+    newRank.splice(targetIndex, 0, option);
+    setLowRank(newRank);
+  };
+
   const [
     getPollData,
     { /* loading: pollLoading, */ data: pollData },
@@ -469,9 +515,9 @@ const Poll = ({
             {title}
           </Question>
           {pollResultData && (
-            <OrderButton onClick={toggleSortResults}>
+            <Button onClick={toggleSortResults}>
               <OrderIcon className="material-icons" active={sortResults}>sort</OrderIcon>
-            </OrderButton>
+            </Button>
           )}
         </Title>
         <DateText>
@@ -506,13 +552,13 @@ const Poll = ({
                   name={option}
                   rank={index + 1 || '0'}
                   percent={`${(ratioPercents[index] || 0).toFixed(2)}%`}
-                  disabled
                 />
               );
             })}
           </div>
         ) : (
           <>
+            <Hint>Select Multiple</Hint>
             {rank.length ? (
               <div>
                 {rank.map((option, index) => {
@@ -533,6 +579,7 @@ const Poll = ({
                     newRank.splice(index + 1, 0, option);
                     setRank(newRank);
                   } : null;
+                  const startRankDrag = () => setRankDragIndex(index);
                   return (
                     <PollOption
                       key={option}
@@ -542,6 +589,11 @@ const Poll = ({
                       upClick={upClick}
                       downClick={downClick}
                       disabled={submitted}
+                      index={index}
+                      dragStart={startRankDrag}
+                      dragEnd={endRankDrag}
+                      draggingIndex={rankDragIndex}
+                      drop={rankDrop}
                     />
                   );
                 })}
@@ -553,27 +605,41 @@ const Poll = ({
               </div>
             ) : null}
             {orderedOptions && (
-            <Unranked>
-              {orderedOptions.filter(
-                (option) => !rank.includes(option) && !lowRank.includes(option),
-              ).map((option) => {
-                const upClick = () => {
-                  setRank([...rank, option]);
-                };
-                const downClick = () => {
-                  setLowRank([option, ...lowRank]);
-                };
-                return (
-                  <PollOption
-                    key={option}
-                    name={option}
-                    upClick={upClick}
-                    downClick={downClick}
-                    disabled={submitted}
-                  />
-                );
-              })}
-            </Unranked>
+              <Unranked
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => {
+                  if (rankDragIndex !== null) {
+                    const newRank = [...rank];
+                    newRank.splice(rankDragIndex, 1);
+                    setRank(newRank);
+                  } else if (lowRankDragIndex !== null) {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRankDragIndex, 1);
+                    setLowRank(newRank);
+                  }
+                }}
+              >
+                {orderedOptions.filter(
+                  (option) => !rank.includes(option) && !lowRank.includes(option),
+                ).map((option) => {
+                  const upClick = () => {
+                    setRank([...rank, option]);
+                  };
+                  const downClick = () => {
+                    setLowRank([option, ...lowRank]);
+                  };
+                  return (
+                    <PollOption
+                      key={option}
+                      name={option}
+                      upClick={upClick}
+                      downClick={downClick}
+                      disabled={submitted}
+                      allowDown={allowLowVote}
+                    />
+                  );
+                })}
+              </Unranked>
             )}
             {lowRank.length ? (
               <div>
@@ -600,6 +666,7 @@ const Poll = ({
                     newRank.splice(index + 1, 0, option);
                     setLowRank(newRank);
                   } : null;
+                  const startLowRankDrag = () => setLowRankDragIndex(index);
                   return (
                     <PollOption
                       key={option}
@@ -610,11 +677,25 @@ const Poll = ({
                       upClick={upClick}
                       downClick={downClick}
                       disabled={submitted}
+                      index={index}
+                      dragStart={startLowRankDrag}
+                      dragEnd={endLowRankDrag}
+                      draggingIndex={lowRankDragIndex}
+                      drop={lowRankDrop}
                     />
                   );
                 })}
               </div>
             ) : null}
+            <LowVote>
+              <Button type="button" onClick={toggleLowVote}>
+                <LowVoteIcon className="material-icons">
+                  {allowLowVote ? 'radio_button_checked' : 'radio_button_unchecked'}
+                </LowVoteIcon>
+              </Button>
+              {' '}
+              Allow low vote
+            </LowVote>
           </>
         )}
         <CardBottom>
