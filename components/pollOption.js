@@ -56,8 +56,8 @@ const Input = styled.input`
 `;
 
 const Delete = styled.button`
-  font-size: 1.2em;
   border: 0;
+  padding: 0;
   background-color: transparent;
   cursor: pointer;
   opacity: ${(props) => (props.invisible ? '0' : '1')};

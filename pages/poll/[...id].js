@@ -271,8 +271,13 @@ const DateText = styled.div`
 
 const Hint = styled.div`
   font-family: Open Sans, sans-serif;
-  font-size: 0.8em;
+  font-size: 0.9em;
   margin-top: 4px;
+`;
+
+const OptionTop = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
 
 const LowVote = styled.label`
@@ -352,6 +357,10 @@ const Poll = ({
   const router = useRouter();
   const [rank, setRank] = useState([]);
   const [lowRank, setLowRank] = useState([]);
+  const reset = () => {
+    setRank([]);
+    setLowRank([]);
+  };
   const [submitted, setSubmitted] = useState(false);
   const [sortResults, setSortResults] = useState(true);
   const [allowLowVote, setAllowLowVote] = useState(false);
@@ -558,7 +567,12 @@ const Poll = ({
           </div>
         ) : (
           <>
-            <Hint>Select Multiple</Hint>
+            <OptionTop>
+              <Hint>Select any number of options</Hint>
+              <Button onClick={reset}>
+                <span className="material-icons">refresh</span>
+              </Button>
+            </OptionTop>
             {rank.length ? (
               <div>
                 {rank.map((option, index) => {
@@ -694,7 +708,7 @@ const Poll = ({
                 </LowVoteIcon>
               </Button>
               {' '}
-              Allow low vote
+              Advanced
             </LowVote>
           </>
         )}
