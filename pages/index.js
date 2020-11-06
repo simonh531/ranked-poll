@@ -65,17 +65,12 @@ const Tooltip = ({ children }) => {
   );
 };
 
-const Main = styled.main`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const Top = styled.div`
+  grid-area: title;
 `;
 
 const Title = styled.h1`
   margin: 16px 0 4px;
-  width: 60%;
-  min-width: 320px;
   font-family: Righteous, cursive;
   font-size: 3.2em;
   text-align: center;
@@ -86,8 +81,6 @@ const Title = styled.h1`
 
 const Subtitle = styled.h2`
   margin: 0 0 16px;
-  width: 60%;
-  min-width: 320px;
   font-family: Merriweather, serif;
   font-size: 1.6em;
   text-align: center;
@@ -95,7 +88,7 @@ const Subtitle = styled.h2`
   text-shadow: 0 0 8px black;
   font-weight: 400;
 
-  @media (max-width: 400px) {
+  @media (max-width: 768px) {
     line-height: 1.5;
     font-size: 1.4em;
     margin-bottom: 12px;
@@ -182,12 +175,12 @@ const ColorInput = styled.input`
 const Label = styled.label`
   display: block;
   position: relative;
-  padding-top: 0.8em;
+  padding-top: 1em;
 `;
 
 const LabelText = styled.span`
   position: absolute;
-  top: ${(props) => (props.show ? '0' : 'calc(0.8em + 4px)')};
+  top: ${(props) => (props.show ? '0' : 'calc(1em + 4px)')};
   font-size: 0.8em;
   color: #444444;
   font-family: Open Sans, sans-serif;
@@ -260,9 +253,9 @@ const Index = () => {
 
   useEffect(() => {
     if (firstRender.current && !(
-      themeColor[0] === 255
-      && themeColor[1] === 255
-      && themeColor[2] === 255
+      themeColor[0] === 0
+      && themeColor[1] === 110
+      && themeColor[2] === 110
     )) {
       const colorResult = Object.keys(Colors).find(
         (name) => Colors[name][0] === themeColor[0]
@@ -317,8 +310,7 @@ const Index = () => {
             key={id}
             value={pollOption.value}
             onChange={onChange}
-            onCancel={onCancel}
-            lastOne={lastOne}
+            onCancel={!lastOne && onCancel}
           />
         );
       },
@@ -327,13 +319,15 @@ const Index = () => {
   );
 
   return (
-    <Main>
-      <Title>Ranked Poll</Title>
-      <Subtitle>
-        Share ranked vote polls!
-        <Link href="/about/" passHref><Why>Why?</Why></Link>
-      </Subtitle>
-      <Card>
+    <>
+      <Top>
+        <Title>Ranked Poll</Title>
+        <Subtitle>
+          Share ranked vote polls!
+          <Link href="/about/" passHref><Why>Why?</Why></Link>
+        </Subtitle>
+      </Top>
+      <Card area="center">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question
@@ -435,7 +429,7 @@ const Index = () => {
           Submit
         </SubmitButton>
       </Card>
-    </Main>
+    </>
   );
 };
 

@@ -1,37 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useReactiveVar } from '@apollo/client';
 import { themeColorVar } from './layout';
-import { toSecondary } from '../style/colors';
+import { toSecondary, toTertiary } from '../style/colors';
 
 const Container = styled.div`
+  height: 2.4em;
   display: flex;
   align-items: center;
-  margin: 12px 0;
+  position: relative;
+  opacity: ${(props) => (props.dragging ? '0.6' : '1')};
 `;
 
-const Box = styled.input`
-  width: 16px;
-  height: 16px;
-  pointer-events: ${(props) => (props.clickThrough ? 'none' : 'auto')};
+const ContainerBorder = styled.div`
+  border-width: 1px 0;
+  border-style: solid;
+  border-color: transparent;
+  ${(props) => (props.topBorder ? `
+    border-top-color: black;
+    box-shadow: 0 -1px black;
+  ` : '')}
+  ${(props) => (props.bottomBorder ? `
+    border-bottom-color: black;
+    box-shadow: 0 1px black;
+  ` : '')}
 `;
 
 const Rank = styled.span`
+  width: 2ch;
   font-size: 1.6em;
-`;
-
-const Label = styled.label`
-  display: flex;
-  align-items: center;
+  text-align: center;
 `;
 
 const Name = styled.span`
   font-family: Open Sans, sans-serif;
   margin-left: 1ch;
+  flex: 1;
 `;
 
 const InputLabel = styled.label`
-  flex: 2;
+  flex: 1;
 `;
 
 const Input = styled.input`
@@ -40,25 +48,76 @@ const Input = styled.input`
   font-family: Open Sans, sans-serif;
   border: 0;
   border-bottom: 1px solid black;
-  width: 100%;
+  width: calc(100% - 1ch);
 
   :focus {
     outline: none;
   }
 `;
 
-const Toolbar = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-const Icon = styled.span`
-  margin: 0 1ch;
-  font-size: 1.2em;
+const Delete = styled.button`
+  border: 0;
+  padding: 0;
+  background-color: transparent;
   cursor: pointer;
   opacity: ${(props) => (props.invisible ? '0' : '1')};
   pointer-events: ${(props) => (props.invisible ? 'none' : 'auto')};
+
+  &:hover > span {
+    text-shadow: 0 0 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
+  }
+`;
+
+const MoveButton = styled.button`
+  height: 1.6em;
+  width: 1.6em;
+  margin: 0 4px;
+  border-radius: 4px;
+  text-shadow: 0 0 1px black;
+  border: 0;
+  background-color: ${() => toSecondary(useReactiveVar(themeColorVar))};
+  color: white;
+  box-shadow: 0 0 1px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ${(props) => {
+    if (!props.disabled) {
+      return `
+      cursor: pointer;
+
+      :hover {
+        box-shadow: 0 0 1px 1px rgba(0,0,0,0.5);
+      }
+
+      :active {
+        filter: brightness(80%);
+      }
+      `;
+    }
+    return 'opacity: 0.3';
+  }}
+
+  ${(props) => props.smaller && `
+    & > span {
+      font-size: 1em;
+    }
+  `}
+`;
+
+const CheckButton = styled.button`
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover > span {
+    text-shadow: 0 0 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
+  }
 `;
 
 const GraphContainer = styled.div`
@@ -96,59 +155,165 @@ const HiddenText = styled.span`
   color: transparent;
 `;
 
+const DragTop = styled.div`
+  width: 100%;
+  height: calc(50% + 1px);
+  position: absolute;
+  top: -1px;
+`;
+
+const DragBottom = styled.div`
+  width: 100%;
+  height: calc(50% + 1px);
+  position: absolute;
+  bottom: -1px;
+`;
+
 const PollOption = ({
-  name, value, onChange, upClick, downClick, onCancel, lastOne,
-  boxClick = () => {}, rank, disabled, id,
-  percent,
-}) => (
-  <div>
-    <Container>
-      {onChange ? (
-        <>
-          <span className="material-icons">check_box_outline_blank</span>
-          <InputLabel htmlFor={id}>
-            <HiddenText>Answer</HiddenText>
-            <Input type="text" id={id} placeholder="Enter an answer" value={value} onChange={onChange} />
-          </InputLabel>
-        </>
-      ) : (
-        <Label htmlFor={id}>
-          {rank ? <Rank>{rank}</Rank> : (
-            <Box type="checkbox" onClick={boxClick} tabIndex="-1" id={id} active={false} />
-          )}
-          <Name>{name}</Name>
-        </Label>
-      )}
-      <Toolbar>
-        {onChange && !lastOne ? (
-          <Icon className="material-icons" onClick={onCancel}>
+  name, value, onChange, upClick, downClick, onCancel,
+  rank, id, percent, disabled, allowDown, index,
+  draggingIndex, dragStart, dragEnd, drop,
+}) => {
+  const [topBorder, setTopBorder] = useState(false);
+  const [bottomBorder, setBottomBorder] = useState(false);
+  const [isDragged, setIsDragged] = useState(false);
+
+  const onDragStart = () => {
+    setIsDragged(true);
+    dragStart();
+  };
+
+  const onDragEnd = () => {
+    setIsDragged(false);
+    dragEnd();
+  };
+
+  if (onChange) {
+    return (
+      <Container>
+        <span className="material-icons">check_box_outline_blank</span>
+        <InputLabel htmlFor={id}>
+          <HiddenText>Answer</HiddenText>
+          <Input type="text" id={id} placeholder="Enter an answer" value={value} onChange={onChange} />
+        </InputLabel>
+        <Delete onClick={onCancel} invisible={!onCancel}>
+          <span className="material-icons">
             close
-          </Icon>
-        ) : null}
-        {rank ? (
-          <>
-            <Icon className="material-icons" onClick={upClick} invisible={rank === 1 || disabled}>
-              arrow_upward
-            </Icon>
-            <Icon className="material-icons" onClick={downClick} invisible={lastOne || disabled}>
-              arrow_downward
-            </Icon>
-            <Icon className="material-icons" onClick={onCancel} invisible={disabled}>
+          </span>
+        </Delete>
+      </Container>
+    );
+  }
+  if (disabled) {
+    return (
+      <Container>
+        <Rank>{rank}</Rank>
+        <Name>{name}</Name>
+      </Container>
+    );
+  }
+  if (percent) {
+    return (
+      <div>
+        <Container>
+          <Rank>{rank}</Rank>
+          <Name>{name}</Name>
+        </Container>
+        {percent && (
+          <GraphContainer>
+            <BarPercent>{percent}</BarPercent>
+            <BarContainer>
+              <Bar percent={percent} />
+            </BarContainer>
+          </GraphContainer>
+        )}
+      </div>
+    );
+  }
+  if (rank) {
+    return (
+      <ContainerBorder
+        draggable={rank && !disabled}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        topBorder={topBorder}
+        bottomBorder={bottomBorder}
+      >
+        <Container dragging={isDragged}>
+          <Rank>{rank}</Rank>
+          <MoveButton type="button" onClick={upClick} disabled={!upClick}>
+            <span className="material-icons">arrow_upward</span>
+          </MoveButton>
+          <MoveButton type="button" onClick={downClick} disabled={!downClick}>
+            <span className="material-icons">arrow_downward</span>
+          </MoveButton>
+          <Name>{name}</Name>
+          <Delete onClick={onCancel} invisible={!onCancel}>
+            <span className="material-icons">
               close
-            </Icon>
-          </>
-        ) : null}
-      </Toolbar>
+            </span>
+          </Delete>
+          {draggingIndex !== null ? (
+            <>
+              <DragTop
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setTopBorder(true);
+                }}
+                onDragLeave={() => setTopBorder(false)}
+                onDrop={() => {
+                  setTopBorder(false);
+                  drop(index - (draggingIndex < index ? 1 : 0));
+                }}
+              />
+              <DragBottom
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setBottomBorder(true);
+                }}
+                onDragLeave={() => setBottomBorder(false)}
+                onDrop={() => {
+                  setBottomBorder(false);
+                  drop(index + 1 - (draggingIndex <= index ? 1 : 0));
+                }}
+              />
+            </>
+          ) : null}
+        </Container>
+      </ContainerBorder>
+    );
+  }
+  let buttons;
+  if (allowDown) {
+    buttons = (
+      <>
+        <MoveButton type="button" onClick={upClick} disabled={!upClick} smaller>
+          <span className="material-icons">thumb_up</span>
+        </MoveButton>
+        <MoveButton type="button" onClick={downClick} disabled={!downClick} smaller>
+          <span className="material-icons">thumb_down</span>
+        </MoveButton>
+      </>
+    );
+  } else {
+    buttons = (
+      <CheckButton type="button" onClick={upClick}>
+        <span className="material-icons">check_box_outline_blank</span>
+      </CheckButton>
+    );
+  }
+  return (
+    <Container>
+      <Rank>{rank}</Rank>
+      {buttons}
+      <Name>{name}</Name>
+      <Delete onClick={onCancel} invisible={!onCancel}>
+        <span className="material-icons">
+          close
+        </span>
+      </Delete>
     </Container>
-    {percent ? (
-      <GraphContainer>
-        <BarPercent>{percent}</BarPercent>
-        <BarContainer>
-          <Bar percent={percent} />
-        </BarContainer>
-      </GraphContainer>
-    ) : null}
-  </div>
-);
+  );
+};
 
 export default PollOption;

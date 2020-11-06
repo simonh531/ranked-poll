@@ -5,7 +5,7 @@ import Head from 'next/head';
 import { makeVar, useReactiveVar } from '@apollo/client';
 import { toPrimary, toTertiary } from '../style/colors';
 
-export const themeColorVar = makeVar([255, 255, 255]);
+export const themeColorVar = makeVar([0, 110, 110]);
 
 const Nav = styled.nav`
   position: relative;
@@ -77,6 +77,17 @@ const Spacer = styled.div`
   flex: 1;
 `;
 
+const Grid = styled.main`
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(304px, 60%) 1fr;
+  grid-template-rows: minmax(8px, max-content) min-content minmax(8px, max-content);
+  gap: 8px;
+  grid-template-areas: 
+  ". title ." 
+  "center-left center center-right";
+`;
+
 const Copyright = styled.div`
   /* white-space: nowrap; */
 `;
@@ -100,6 +111,16 @@ export default function Layout({ children }) {
     <Screen>
       <Head>
         <title>Ranked Poll | Share Ranked Vote Polls</title>
+        <meta charSet="UTF-8" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="stylesheet" type="text/css" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather&family=Open+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet" />
+        <meta property="og:site_name" content="Ranked Poll" key="ogsitename" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="description" key="description" content={description} />
         <script type="application/ld+json" dangerouslySetInnerHTML={structuredData} />
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
@@ -114,7 +135,9 @@ export default function Layout({ children }) {
         <CenterSpace />
         {/* <Account className="material-icons">account_circle</Account> */}
       </Nav>
-      {children}
+      <Grid>
+        {children}
+      </Grid>
       <Footer>
         <FooterCenter>
           <Link href="/" passHref><FooterA>Home</FooterA></Link>

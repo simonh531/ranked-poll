@@ -1,4 +1,5 @@
 import { SitemapStream, streamToPromise } from 'sitemap';
+import { createClient } from 'contentful';
 import Cursor from 'pg-cursor';
 import Pool from '../../postgresPool';
 
@@ -31,8 +32,34 @@ export default async (req, res) => {
       url: '',
       priority: 1,
     });
+
     smStream.write({
       url: '/about',
+      priority: 0.8,
+    });
+
+    const contentfulClient = createClient({
+      space: process.env.CONTENTFUL_SPACE,
+      accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
+      host: process.env.CONTENTFUL_HOST,
+    });
+
+    const entries = await contentfulClient.getEntries({
+      content_type: 'page',
+      select: 'fields.title',
+    });
+
+    entries.items.forEach(({ fields }) => {
+      if (fields.title !== 'Intro') {
+        smStream.write({
+          url: `/about/${fields.title}`,
+          priority: 0.7,
+        });
+      }
+    });
+
+    smStream.write({
+      url: '/about/Calculation',
       priority: 0.7,
     });
 
