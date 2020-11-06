@@ -22,7 +22,7 @@ const Text = styled.div`
   text-align: justify;
 `;
 
-const About = ({ pages, text }) => {
+const About = ({ pages = [], text = '' }) => {
   const description = text.split('\n')[0].replace(/\[(.*?)\]\(.*?\)/g, '$1');
   return (
     <AboutLayout pages={pages}>
