@@ -92,7 +92,7 @@ const Copyright = styled.div`
   /* white-space: nowrap; */
 `;
 
-const description = 'Instantly create and share ranked vote polls for more accurate preference data!';
+const description = 'Instantly create and share ranked vote polls! Learn about ranked voting and why we should use it. Free and no sign up needed!';
 
 const structuredData = {
   __html: `{
@@ -101,7 +101,7 @@ const structuredData = {
     "logo" : "https://rankedpoll.com/android-chrome-512x512.png",
     "url" : "https://rankedpoll.com",
     "name" : "Ranked Poll",
-    "description" : "Instantly create and share ranked vote polls for more accurate preference data!",
+    "description" : "${description}",
     "email" : "contact@rankedpoll.com"
   }`,
 };
