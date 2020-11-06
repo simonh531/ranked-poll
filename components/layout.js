@@ -77,6 +77,17 @@ const Spacer = styled.div`
   flex: 1;
 `;
 
+const Grid = styled.main`
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(304px, 60%) 1fr;
+  grid-template-rows: minmax(8px, max-content) min-content minmax(8px, max-content);
+  gap: 8px;
+  grid-template-areas: 
+  ". title ." 
+  "center-left center center-right";
+`;
+
 const Copyright = styled.div`
   /* white-space: nowrap; */
 `;
@@ -119,7 +130,9 @@ export default function Layout({ children }) {
         <CenterSpace />
         {/* <Account className="material-icons">account_circle</Account> */}
       </Nav>
-      {children}
+      <Grid>
+        {children}
+      </Grid>
       <Footer>
         <FooterCenter>
           <Link href="/" passHref><FooterA>Home</FooterA></Link>

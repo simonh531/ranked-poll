@@ -65,17 +65,12 @@ const Tooltip = ({ children }) => {
   );
 };
 
-const Main = styled.main`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const Top = styled.div`
+  grid-area: title;
 `;
 
 const Title = styled.h1`
   margin: 16px 0 4px;
-  width: 60%;
-  min-width: 320px;
   font-family: Righteous, cursive;
   font-size: 3.2em;
   text-align: center;
@@ -86,8 +81,6 @@ const Title = styled.h1`
 
 const Subtitle = styled.h2`
   margin: 0 0 16px;
-  width: 60%;
-  min-width: 320px;
   font-family: Merriweather, serif;
   font-size: 1.6em;
   text-align: center;
@@ -326,13 +319,15 @@ const Index = () => {
   );
 
   return (
-    <Main>
-      <Title>Ranked Poll</Title>
-      <Subtitle>
-        Share ranked vote polls!
-        <Link href="/about/" passHref><Why>Why?</Why></Link>
-      </Subtitle>
-      <Card>
+    <>
+      <Top>
+        <Title>Ranked Poll</Title>
+        <Subtitle>
+          Share ranked vote polls!
+          <Link href="/about/" passHref><Why>Why?</Why></Link>
+        </Subtitle>
+      </Top>
+      <Card area="center">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question
@@ -434,7 +429,7 @@ const Index = () => {
           Submit
         </SubmitButton>
       </Card>
-    </Main>
+    </>
   );
 };
 

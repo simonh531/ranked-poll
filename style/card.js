@@ -4,13 +4,11 @@ import { themeColorVar } from '../components/layout';
 import { toSecondary, toTertiary } from './colors';
 
 export const Card = styled.div`
-  margin: 20px 0;
-  width: 60%;
   padding: 20px;
-  min-width: 320px;
   background-color: white;
-  border-radius: 2px;
+  border-radius: 4px;
   box-shadow: 0 0 2px 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
+  grid-area: ${(props) => props.area};
 `;
 
 export const Description = styled.div`
