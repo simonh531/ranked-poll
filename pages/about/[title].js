@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import React from 'react';
+import Head from 'next/head';
 import styled from 'styled-components';
 import { createClient } from 'contentful';
 import marked from 'marked';
@@ -20,13 +21,28 @@ const Text = styled.div`
   text-align: justify;
 `;
 
-const About = ({ pages = ['Intro'], title, text = '' }) => (
-  <AboutLayout pages={pages}>
-    <Title>{title}</Title>
-    {/* eslint-disable-next-line react/no-danger */}
-    <Text dangerouslySetInnerHTML={{ __html: marked(text) }} />
-  </AboutLayout>
-);
+const About = ({ pages = ['Intro'], title, text = '' }) => {
+  const description = text.split('\n')[0].replace(/\[(.*?)\]\(.*?\)/g, '$1');
+  return (
+    <AboutLayout pages={pages}>
+      <Head>
+        <title>
+          {title}
+          {' '}
+          | Ranked Poll About
+        </title>
+        <meta name="description" key="description" content={description} />
+        <meta property="og:url" content={`rankedpoll.com/about/${title}`} key="ogurl" />
+        <meta property="og:title" content={title} key="ogtitle" />
+        <meta property="og:description" content={description} key="ogdesc" />
+        <link rel="canonical" href={`https://rankedpoll.com/about/${title}`} key="canonical" />
+      </Head>
+      <Title>{title}</Title>
+      {/* eslint-disable-next-line react/no-danger */}
+      <Text dangerouslySetInnerHTML={{ __html: marked(text) }} />
+    </AboutLayout>
+  );
+};
 
 export const getStaticPaths = async () => ({
   paths: [

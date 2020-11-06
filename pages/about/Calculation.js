@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
+import Head from 'next/head';
 import styled from 'styled-components';
 import { createClient } from 'contentful';
 
@@ -63,11 +64,20 @@ const Calculation = ({ pages }) => {
   const aIndex = rankings.findIndex((array) => array.includes('a'));
   const bIndex = rankings.findIndex((array) => array.includes('b'));
   const cIndex = rankings.findIndex((array) => array.includes('c'));
+  const description = 'The winner of each poll should be visible at a glance and bar graphs are one of the best ways to convey that data. Unfortunately, converting ranked voting data into graph data is unintuitive because votes don’t sum to the same number across the board when people may leave choices unranked and the option with a majority of first places may not be the victor.';
   return (
     <AboutLayout pages={pages}>
+      <Head>
+        <title>Calculation | Ranked Poll About</title>
+        <meta name="description" key="description" content={description} />
+        <meta property="og:url" content="rankedpoll.com/about/Calculation" key="ogurl" />
+        <meta property="og:title" content="Calculation" key="ogtitle" />
+        <meta property="og:description" content={description} key="ogdesc" />
+        <link rel="canonical" href="https://rankedpoll.com/about/Calculation" key="canonical" />
+      </Head>
       <Title>Calculation</Title>
       <P>
-        The winner of each poll should be visible at a glance and bar graphs are one of the best ways to convey that data. Unfortunately, converting ranked voting data into graph data is unintuitive because votes don’t sum to the same number across the board when people may leave choices unranked and the option with a majority of first places may not be the victor.
+        {description}
       </P>
       <P>
         Fortunately, the ranked pairs method we use determines an exact ranking for all options and is one of the few ranked voting methods where removing an option leaves the ranking of all other options unchanged. What we can then do is calculate the ratio of votes from 1st to 2nd pace and 2nd to 3rd place and so on. These ratios are all summed up and calculated as a victory percentage, which is what is displayed on the results. It should be noted that if this same method were applied to a plurality vote, the percentages would be identical to the percentage of votes received.
