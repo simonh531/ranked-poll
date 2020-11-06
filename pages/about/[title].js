@@ -20,7 +20,7 @@ const Text = styled.div`
   text-align: justify;
 `;
 
-const About = ({ pages, title, text }) => (
+const About = ({ pages = ['Intro'], title, text = '' }) => (
   <AboutLayout pages={pages}>
     <Title>{title}</Title>
     {/* eslint-disable-next-line react/no-danger */}
