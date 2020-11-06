@@ -310,7 +310,7 @@ const Index = () => {
             key={id}
             value={pollOption.value}
             onChange={onChange}
-            onCancel={!lastOne && onCancel}
+            onCancel={!lastOne ? onCancel : undefined}
           />
         );
       },

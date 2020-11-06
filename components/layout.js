@@ -57,6 +57,8 @@ const Footer = styled.footer`
 
 const FooterCenter = styled.div`
   font-family: Open Sans, sans-serif;
+  line-height: 1.4;
+  padding: 8px;
   width: 60%;
   min-width: 320px;
   display: flex;
@@ -122,6 +124,7 @@ export default function Layout({ children }) {
         <meta property="og:site_name" content="Ranked Poll" key="ogsitename" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="description" key="description" content={description} />
+        {/* eslint-disable-next-line react/no-danger */}
         <script type="application/ld+json" dangerouslySetInnerHTML={structuredData} />
         {/* <meta property="og:image" content={previewImage} key="ogimage" /> */}
         <meta property="og:url" content="rankedpoll.com" key="ogurl" />
@@ -142,13 +145,12 @@ export default function Layout({ children }) {
         <FooterCenter>
           <Link href="/" passHref><FooterA>Home</FooterA></Link>
           <Link href="/about" passHref><FooterA>About</FooterA></Link>
+          <FooterA href="https://github.com/shuang5531/ranked-poll">GitHub</FooterA>
           <div>contact@rankedpoll.com</div>
           <Spacer />
           <Copyright>
-            &copy; Copyright
-            {' '}
-            {new Date(Date.now()).getFullYear()}
-            {' '}
+            &copy;
+            {` ${new Date(Date.now()).getFullYear()} `}
             Ranked Poll
           </Copyright>
         </FooterCenter>
