@@ -43,45 +43,49 @@ export const getStaticProps = async ({ params }) => {
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
     host: process.env.CONTENTFUL_HOST,
   });
+  try {
+    const entries = await client.getEntries({
+      content_type: 'page',
+      select: 'fields.title,fields.priority',
+    });
 
-  const entries = await client.getEntries({
-    content_type: 'page',
-    select: 'fields.title,fields.priority',
-  });
+    let id;
+    const pages = entries.items.sort(
+      (entry1, entry2) => entry1.fields.priority - entry2.fields.priority,
+    ).map(({ fields, sys }) => {
+      if (fields.title === params.title) {
+        id = sys.id;
+      }
+      return fields.title;
+    });
 
-  let id;
-  const pages = entries.items.sort(
-    (entry1, entry2) => entry1.fields.priority - entry2.fields.priority,
-  ).map(({ fields, sys }) => {
-    if (fields.title === params.title) {
-      id = sys.id;
+    const content = await client.getEntry(id, {
+      content_type: 'page',
+      select: 'fields.content',
+    });
+
+    const text = content.fields.content;
+
+    if (text) {
+      return {
+        props: {
+          pages: [...pages, 'Calculation'],
+          title: params.title,
+          text,
+        },
+      };
     }
-    return fields.title;
-  });
 
-  const content = await client.getEntry(id, {
-    content_type: 'page',
-    select: 'fields.content',
-  });
-
-  const text = content.fields.content;
-
-  if (text) {
     return {
-      props: {
-        pages: [...pages, 'Calculation'],
-        title: params.title,
-        text,
+      redirect: {
+        destination: '/about',
+        permanent: false,
       },
     };
+  } catch (err) {
+    console.log(err);
+    return null;
   }
-
-  return {
-    redirect: {
-      destination: '/about',
-      permanent: false,
-    },
-  };
 };
 
 export default About;
