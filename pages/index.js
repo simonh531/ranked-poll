@@ -209,7 +209,7 @@ const createOnBlur = (set, value) => () => {
 
 const createOnFocus = (set) => () => set(true);
 
-const Index = () => {
+const Index = ({ dataLayer }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [randomize, setRandomize] = useState(true);
@@ -225,7 +225,7 @@ const Index = () => {
   const firstRender = useRef(true);
 
   const themeColor = useReactiveVar(themeColorVar);
-  const [createPoll, { data }] = useMutation(CREATE_POLL, {
+  const [createPoll, { data, loading }] = useMutation(CREATE_POLL, {
     variables: {
       input: {
         title,
@@ -327,7 +327,7 @@ const Index = () => {
           <Link href="/about/" passHref><Why>Why?</Why></Link>
         </Subtitle>
       </Top>
-      <Card area="center">
+      <Card area="center" as="form">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question
@@ -422,11 +422,19 @@ const Index = () => {
         </Options>
         <SubmitButton
           color={themeColor.join(',')}
-          type="button"
-          onClick={createPoll}
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            if (!loading) {
+              createPoll();
+              dataLayer({
+                dataLayer: { event: 'poll-submit-clicked' },
+              });
+            }
+          }}
           disabled={!title || Object.values(options).join('') === ''}
         >
-          Submit
+          {!loading ? 'Submit' : 'Loading...'}
         </SubmitButton>
       </Card>
     </>
@@ -434,47 +442,3 @@ const Index = () => {
 };
 
 export default Index;
-
-// const ViewerQuery = gql`
-//   query ViewerQuery {
-//     viewer {
-//       id
-//       email
-//     }
-//   }
-// `
-
-// const Index = () => {
-//   const router = useRouter()
-//   const { data, loading, error } = useQuery(ViewerQuery)
-//   const viewer = data?.viewer
-//   const shouldRedirect = !(loading || error || viewer)
-
-//   useEffect(() => {
-//     if (shouldRedirect) {
-//       router.push('/signin')
-//     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [shouldRedirect])
-
-//   if (error) {
-//     return <p>{error.message}</p>
-//   }
-
-//   if (viewer) {
-//     return (
-//       <div>
-//         You're signed in as {viewer.email} goto{' '}
-//         <Link href="/about">
-//           <a>about</a>
-//         </Link>{' '}
-//         page. or{' '}
-//         <Link href="/signout">
-//           <a>signout</a>
-//         </Link>
-//       </div>
-//     )
-//   }
-
-//   return <p>Loading...</p>
-// }

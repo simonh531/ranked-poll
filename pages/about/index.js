@@ -49,7 +49,8 @@ export const getStaticProps = async () => {
   ) {
     return {
       props: {
-        pages: ['Calculation'], text: '',
+        pages: ['Calculation'],
+        text: '',
       },
     };
   }

@@ -49,6 +49,7 @@ export const getStaticPaths = async () => ({
     { params: { title: 'Intro' } },
     { params: { title: 'Method' } },
     { params: { title: 'Double Voting' } },
+    { params: { title: 'Open Source' } },
   ],
   fallback: true,
 });
@@ -67,7 +68,6 @@ export const getStaticProps = async ({ params }) => {
       },
     };
   }
-
   const client = createClient({
     space: process.env.CONTENTFUL_SPACE,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,

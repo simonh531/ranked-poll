@@ -196,7 +196,7 @@ const PollOption = ({
           <HiddenText>Answer</HiddenText>
           <Input type="text" id={id} placeholder="Enter an answer" value={value} onChange={onChange} />
         </InputLabel>
-        <Delete onClick={onCancel} invisible={!onCancel}>
+        <Delete type="button" onClick={onCancel} invisible={!onCancel}>
           <span className="material-icons">
             close
           </span>
@@ -248,7 +248,7 @@ const PollOption = ({
             <span className="material-icons">arrow_downward</span>
           </MoveButton>
           <Name>{name}</Name>
-          <Delete onClick={onCancel} invisible={!onCancel}>
+          <Delete type="button" onClick={onCancel} invisible={!onCancel}>
             <span className="material-icons">
               close
             </span>
@@ -307,7 +307,7 @@ const PollOption = ({
       <Rank>{rank}</Rank>
       {buttons}
       <Name>{name}</Name>
-      <Delete onClick={onCancel} invisible={!onCancel}>
+      <Delete type="button" onClick={onCancel} invisible={!onCancel}>
         <span className="material-icons">
           close
         </span>
