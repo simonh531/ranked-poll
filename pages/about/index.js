@@ -42,6 +42,18 @@ const About = ({ pages = [], text = '' }) => {
 };
 
 export const getStaticProps = async () => {
+  if (
+    !process.env.CONTENTFUL_SPACE
+    || !process.env.CONTENTFUL_ACCESS_TOKEN
+    || !process.env.CONTENTFUL_HOST
+  ) {
+    return {
+      props: {
+        pages: ['Calculation'], text: '',
+      },
+    };
+  }
+
   const client = createClient({
     space: process.env.CONTENTFUL_SPACE,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
