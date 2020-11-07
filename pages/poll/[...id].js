@@ -344,7 +344,7 @@ function randomizeArray(array) {
 }
 
 const Poll = ({
-  id, title, options, randomize, color, datalayer,
+  id, title, options, randomize, color, dataLayer,
 }) => {
   const copy = useRef(null);
   const router = useRouter();
@@ -489,13 +489,15 @@ const Poll = ({
   } else if (!pollResultData) {
     submit = (
       <SubmitButton
-        type="button"
+        type="submit"
         disabled={!rank.length && !lowRank.length}
         onClick={(e) => {
           e.preventDefault();
           if (!loading) {
             vote();
-            datalayer.push({ event: 'vote_submitted' });
+            dataLayer({
+              dataLayer: { event: 'vote-clicked' },
+            });
           }
         }}
       >
@@ -568,7 +570,7 @@ const Poll = ({
           <>
             <OptionTop>
               <Hint>Select any number of options</Hint>
-              <Button onClick={reset}>
+              <Button type="button" onClick={reset}>
                 <span className="material-icons">refresh</span>
               </Button>
             </OptionTop>
@@ -719,6 +721,7 @@ const Poll = ({
           <Spacer />
           {pollData && (
           <SeeResultsButton
+            type="button"
             onClick={getPollResult}
           >
             {pollResultData
@@ -727,7 +730,7 @@ const Poll = ({
           </SeeResultsButton>
           )}
           <CopyContainer>
-            <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
+            <CopyButton type="button" onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
             <CopyText ref={copy}>{`rnkd.pl/${id || ''}`}</CopyText>
           </CopyContainer>
         </CardBottom>

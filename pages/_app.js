@@ -15,7 +15,7 @@ const client = new ApolloClient({
 });
 
 const tagManagerArgs = {
-  gtmId: 'GTM-5655TMW',
+  gtmId: 'GTM-5655TMW', // is public information
 };
 
 export default function App({ Component, pageProps }) {
@@ -28,7 +28,7 @@ export default function App({ Component, pageProps }) {
       <ApolloProvider client={client}>
         <Layout>
           {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <Component {...pageProps} datalayer={TagManager.datalayer} />
+          <Component {...pageProps} dataLayer={TagManager.dataLayer} />
         </Layout>
       </ApolloProvider>
     </Provider>

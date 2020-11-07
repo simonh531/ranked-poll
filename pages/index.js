@@ -209,7 +209,7 @@ const createOnBlur = (set, value) => () => {
 
 const createOnFocus = (set) => () => set(true);
 
-const Index = ({ datalayer }) => {
+const Index = ({ dataLayer }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [randomize, setRandomize] = useState(true);
@@ -427,7 +427,9 @@ const Index = ({ datalayer }) => {
             e.preventDefault();
             if (!loading) {
               createPoll();
-              datalayer.push({ event: 'poll_created' });
+              dataLayer({
+                dataLayer: { event: 'poll-submit-clicked' },
+              });
             }
           }}
           disabled={!title || Object.values(options).join('') === ''}
@@ -440,47 +442,3 @@ const Index = ({ datalayer }) => {
 };
 
 export default Index;
-
-// const ViewerQuery = gql`
-//   query ViewerQuery {
-//     viewer {
-//       id
-//       email
-//     }
-//   }
-// `
-
-// const Index = () => {
-//   const router = useRouter()
-//   const { data, loading, error } = useQuery(ViewerQuery)
-//   const viewer = data?.viewer
-//   const shouldRedirect = !(loading || error || viewer)
-
-//   useEffect(() => {
-//     if (shouldRedirect) {
-//       router.push('/signin')
-//     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [shouldRedirect])
-
-//   if (error) {
-//     return <p>{error.message}</p>
-//   }
-
-//   if (viewer) {
-//     return (
-//       <div>
-//         You're signed in as {viewer.email} goto{' '}
-//         <Link href="/about">
-//           <a>about</a>
-//         </Link>{' '}
-//         page. or{' '}
-//         <Link href="/signout">
-//           <a>signout</a>
-//         </Link>
-//       </div>
-//     )
-//   }
-
-//   return <p>Loading...</p>
-// }
