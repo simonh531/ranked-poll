@@ -49,11 +49,25 @@ export const getStaticPaths = async () => ({
     { params: { title: 'Intro' } },
     { params: { title: 'Method' } },
     { params: { title: 'Double Voting' } },
+    { params: { title: 'Open Source' } },
   ],
   fallback: true,
 });
 
 export const getStaticProps = async ({ params }) => {
+  if (
+    !process.env.CONTENTFUL_SPACE
+    || !process.env.CONTENTFUL_ACCESS_TOKEN
+    || !process.env.CONTENTFUL_HOST
+  ) {
+    return {
+      props: {
+        pages: ['Calculation'],
+        title: params.title,
+        text: '',
+      },
+    };
+  }
   const client = createClient({
     space: process.env.CONTENTFUL_SPACE,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,

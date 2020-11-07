@@ -209,7 +209,7 @@ const createOnBlur = (set, value) => () => {
 
 const createOnFocus = (set) => () => set(true);
 
-const Index = () => {
+const Index = ({ datalayer }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [randomize, setRandomize] = useState(true);
@@ -225,7 +225,7 @@ const Index = () => {
   const firstRender = useRef(true);
 
   const themeColor = useReactiveVar(themeColorVar);
-  const [createPoll, { data }] = useMutation(CREATE_POLL, {
+  const [createPoll, { data, loading }] = useMutation(CREATE_POLL, {
     variables: {
       input: {
         title,
@@ -327,7 +327,7 @@ const Index = () => {
           <Link href="/about/" passHref><Why>Why?</Why></Link>
         </Subtitle>
       </Top>
-      <Card area="center">
+      <Card area="center" as="form">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question
@@ -422,11 +422,17 @@ const Index = () => {
         </Options>
         <SubmitButton
           color={themeColor.join(',')}
-          type="button"
-          onClick={createPoll}
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            if (!loading) {
+              createPoll();
+              datalayer.push({ event: 'poll_created' });
+            }
+          }}
           disabled={!title || Object.values(options).join('') === ''}
         >
-          Submit
+          {!loading ? 'Submit' : 'Loading...'}
         </SubmitButton>
       </Card>
     </>

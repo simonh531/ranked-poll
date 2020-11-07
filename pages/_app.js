@@ -28,7 +28,7 @@ export default function App({ Component, pageProps }) {
       <ApolloProvider client={client}>
         <Layout>
           {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <Component {...pageProps} />
+          <Component {...pageProps} datalayer={TagManager.datalayer} />
         </Layout>
       </ApolloProvider>
     </Provider>

@@ -344,7 +344,7 @@ function randomizeArray(array) {
 }
 
 const Poll = ({
-  id, title, options, randomize, color,
+  id, title, options, randomize, color, datalayer,
 }) => {
   const copy = useRef(null);
   const router = useRouter();
@@ -407,7 +407,7 @@ const Poll = ({
     actualCount = userCount;
   }
 
-  const [vote, { data: voteData }] = useMutation(VOTE, {
+  const [vote, { data: voteData, loading }] = useMutation(VOTE, {
     update: (cache) => {
       cache.modify({
         id: cache.identify(pollData.poll),
@@ -491,9 +491,15 @@ const Poll = ({
       <SubmitButton
         type="button"
         disabled={!rank.length && !lowRank.length}
-        onClick={vote}
+        onClick={(e) => {
+          e.preventDefault();
+          if (!loading) {
+            vote();
+            datalayer.push({ event: 'vote_submitted' });
+          }
+        }}
       >
-        Vote
+        {!loading ? 'Vote' : 'Loading...'}
       </SubmitButton>
     );
   }
@@ -531,199 +537,201 @@ const Poll = ({
           {description}
         </Description>
       ) : null}
-      {pollResultData ? (
-        <div>
-          {[...orderedOptions].sort((option1, option2) => {
-            if (!sortResults) {
-              return 0;
-            }
-            const percent1 = ratioPercents[
-              rankings.findIndex((array) => array.includes(option1))
-            ] || 0;
-            const percent2 = ratioPercents[
-              rankings.findIndex((array) => array.includes(option2))
-            ] || 0;
-
-            return percent2 - percent1;
-          }).map((option) => {
-            const index = rankings.findIndex((array) => array.includes(option));
-            return (
-              <PollOption
-                key={option}
-                name={option}
-                rank={index + 1 || '0'}
-                percent={`${(ratioPercents[index] || 0).toFixed(2)}%`}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <>
-          <OptionTop>
-            <Hint>Select any number of options</Hint>
-            <Button onClick={reset}>
-              <span className="material-icons">refresh</span>
-            </Button>
-          </OptionTop>
-          {rank.length ? (
-            <div>
-              {rank.map((option, index) => {
-                const onCancel = () => {
-                  const newRank = [...rank];
-                  newRank.splice(rank.indexOf(option), 1);
-                  setRank(newRank);
-                };
-                const upClick = index !== 0 ? () => {
-                  const newRank = [...rank];
-                  newRank.splice(rank.indexOf(option), 1);
-                  newRank.splice(index - 1, 0, option);
-                  setRank(newRank);
-                } : null;
-                const downClick = index !== rank.length - 1 ? () => {
-                  const newRank = [...rank];
-                  newRank.splice(rank.indexOf(option), 1);
-                  newRank.splice(index + 1, 0, option);
-                  setRank(newRank);
-                } : null;
-                const startRankDrag = () => setRankDragIndex(index);
-                return (
-                  <PollOption
-                    key={option}
-                    name={option}
-                    rank={index + 1}
-                    onCancel={onCancel}
-                    upClick={upClick}
-                    downClick={downClick}
-                    disabled={submitted}
-                    index={index}
-                    dragStart={startRankDrag}
-                    dragEnd={endRankDrag}
-                    draggingIndex={rankDragIndex}
-                    drop={rankDrop}
-                  />
-                );
-              })}
-              <Bar>
-                <BarIcon className="material-icons">thumb_up</BarIcon>
-                <BarLine />
-                <BarIcon className="material-icons">thumb_up</BarIcon>
-              </Bar>
-            </div>
-          ) : null}
-          {orderedOptions && (
-          <Unranked
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => {
-              if (rankDragIndex !== null) {
-                const newRank = [...rank];
-                newRank.splice(rankDragIndex, 1);
-                setRank(newRank);
-              } else if (lowRankDragIndex !== null) {
-                const newRank = [...lowRank];
-                newRank.splice(lowRankDragIndex, 1);
-                setLowRank(newRank);
+      <form>
+        {pollResultData ? (
+          <div>
+            {[...orderedOptions].sort((option1, option2) => {
+              if (!sortResults) {
+                return 0;
               }
-            }}
-          >
-            {orderedOptions.filter(
-              (option) => !rank.includes(option) && !lowRank.includes(option),
-            ).map((option) => {
-              const upClick = () => {
-                setRank([...rank, option]);
-              };
-              const downClick = () => {
-                setLowRank([option, ...lowRank]);
-              };
+              const percent1 = ratioPercents[
+                rankings.findIndex((array) => array.includes(option1))
+              ] || 0;
+              const percent2 = ratioPercents[
+                rankings.findIndex((array) => array.includes(option2))
+              ] || 0;
+
+              return percent2 - percent1;
+            }).map((option) => {
+              const index = rankings.findIndex((array) => array.includes(option));
               return (
                 <PollOption
                   key={option}
                   name={option}
-                  upClick={upClick}
-                  downClick={downClick}
-                  disabled={submitted}
-                  allowDown={allowLowVote}
+                  rank={index + 1 || '0'}
+                  percent={`${(ratioPercents[index] || 0).toFixed(2)}%`}
                 />
               );
             })}
-          </Unranked>
-          )}
-          {lowRank.length ? (
-            <div>
-              <Bar>
-                <BarIcon className="material-icons">thumb_down</BarIcon>
-                <BarLine />
-                <BarIcon className="material-icons">thumb_down</BarIcon>
-              </Bar>
-              {lowRank.map((option, index) => {
-                const onCancel = () => {
+          </div>
+        ) : (
+          <>
+            <OptionTop>
+              <Hint>Select any number of options</Hint>
+              <Button onClick={reset}>
+                <span className="material-icons">refresh</span>
+              </Button>
+            </OptionTop>
+            {rank.length ? (
+              <div>
+                {rank.map((option, index) => {
+                  const onCancel = () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    setRank(newRank);
+                  };
+                  const upClick = index !== 0 ? () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    newRank.splice(index - 1, 0, option);
+                    setRank(newRank);
+                  } : null;
+                  const downClick = index !== rank.length - 1 ? () => {
+                    const newRank = [...rank];
+                    newRank.splice(rank.indexOf(option), 1);
+                    newRank.splice(index + 1, 0, option);
+                    setRank(newRank);
+                  } : null;
+                  const startRankDrag = () => setRankDragIndex(index);
+                  return (
+                    <PollOption
+                      key={option}
+                      name={option}
+                      rank={index + 1}
+                      onCancel={onCancel}
+                      upClick={upClick}
+                      downClick={downClick}
+                      disabled={submitted}
+                      index={index}
+                      dragStart={startRankDrag}
+                      dragEnd={endRankDrag}
+                      draggingIndex={rankDragIndex}
+                      drop={rankDrop}
+                    />
+                  );
+                })}
+                <Bar>
+                  <BarIcon className="material-icons">thumb_up</BarIcon>
+                  <BarLine />
+                  <BarIcon className="material-icons">thumb_up</BarIcon>
+                </Bar>
+              </div>
+            ) : null}
+            {orderedOptions && (
+            <Unranked
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => {
+                if (rankDragIndex !== null) {
+                  const newRank = [...rank];
+                  newRank.splice(rankDragIndex, 1);
+                  setRank(newRank);
+                } else if (lowRankDragIndex !== null) {
                   const newRank = [...lowRank];
-                  newRank.splice(lowRank.indexOf(option), 1);
+                  newRank.splice(lowRankDragIndex, 1);
                   setLowRank(newRank);
+                }
+              }}
+            >
+              {orderedOptions.filter(
+                (option) => !rank.includes(option) && !lowRank.includes(option),
+              ).map((option) => {
+                const upClick = () => {
+                  setRank([...rank, option]);
                 };
-                const upClick = index !== 0 ? () => {
-                  const newRank = [...lowRank];
-                  newRank.splice(lowRank.indexOf(option), 1);
-                  newRank.splice(index - 1, 0, option);
-                  setLowRank(newRank);
-                } : null;
-                const downClick = index !== lowRank.length - 1 ? () => {
-                  const newRank = [...lowRank];
-                  newRank.splice(lowRank.indexOf(option), 1);
-                  newRank.splice(index + 1, 0, option);
-                  setLowRank(newRank);
-                } : null;
-                const startLowRankDrag = () => setLowRankDragIndex(index);
+                const downClick = () => {
+                  setLowRank([option, ...lowRank]);
+                };
                 return (
                   <PollOption
                     key={option}
                     name={option}
-                    rank={orderedOptions.length - lowRank.length + index + 1}
-                    lastOne={index === rank.length - 1}
-                    onCancel={onCancel}
                     upClick={upClick}
                     downClick={downClick}
                     disabled={submitted}
-                    index={index}
-                    dragStart={startLowRankDrag}
-                    dragEnd={endLowRankDrag}
-                    draggingIndex={lowRankDragIndex}
-                    drop={lowRankDrop}
+                    allowDown={allowLowVote}
                   />
                 );
               })}
-            </div>
-          ) : null}
-          <LowVote>
-            <Button type="button" onClick={toggleLowVote}>
-              <LowVoteIcon className="material-icons">
-                {allowLowVote ? 'radio_button_checked' : 'radio_button_unchecked'}
-              </LowVoteIcon>
-            </Button>
-            {' '}
-            Advanced
-          </LowVote>
-        </>
-      )}
-      <CardBottom>
-        {submit}
-        <TotalVotes>
-          {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
-        </TotalVotes>
-        <Spacer />
-        {pollData && (
-        <SeeResultsButton
-          onClick={getPollResult}
-        >
-          {pollResultData
-            ? <span className="material-icons">sync</span>
-            : 'See Results'}
-        </SeeResultsButton>
+            </Unranked>
+            )}
+            {lowRank.length ? (
+              <div>
+                <Bar>
+                  <BarIcon className="material-icons">thumb_down</BarIcon>
+                  <BarLine />
+                  <BarIcon className="material-icons">thumb_down</BarIcon>
+                </Bar>
+                {lowRank.map((option, index) => {
+                  const onCancel = () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    setLowRank(newRank);
+                  };
+                  const upClick = index !== 0 ? () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    newRank.splice(index - 1, 0, option);
+                    setLowRank(newRank);
+                  } : null;
+                  const downClick = index !== lowRank.length - 1 ? () => {
+                    const newRank = [...lowRank];
+                    newRank.splice(lowRank.indexOf(option), 1);
+                    newRank.splice(index + 1, 0, option);
+                    setLowRank(newRank);
+                  } : null;
+                  const startLowRankDrag = () => setLowRankDragIndex(index);
+                  return (
+                    <PollOption
+                      key={option}
+                      name={option}
+                      rank={orderedOptions.length - lowRank.length + index + 1}
+                      lastOne={index === rank.length - 1}
+                      onCancel={onCancel}
+                      upClick={upClick}
+                      downClick={downClick}
+                      disabled={submitted}
+                      index={index}
+                      dragStart={startLowRankDrag}
+                      dragEnd={endLowRankDrag}
+                      draggingIndex={lowRankDragIndex}
+                      drop={lowRankDrop}
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
+            <LowVote>
+              <Button type="button" onClick={toggleLowVote}>
+                <LowVoteIcon className="material-icons">
+                  {allowLowVote ? 'radio_button_checked' : 'radio_button_unchecked'}
+                </LowVoteIcon>
+              </Button>
+              {' '}
+              Advanced
+            </LowVote>
+          </>
         )}
-        <CopyContainer>
-          <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
-          <CopyText ref={copy}>{`rnkd.pl/${id || ''}`}</CopyText>
-        </CopyContainer>
-      </CardBottom>
+        <CardBottom>
+          {submit}
+          <TotalVotes>
+            {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
+          </TotalVotes>
+          <Spacer />
+          {pollData && (
+          <SeeResultsButton
+            onClick={getPollResult}
+          >
+            {pollResultData
+              ? <span className="material-icons">sync</span>
+              : 'See Results'}
+          </SeeResultsButton>
+          )}
+          <CopyContainer>
+            <CopyButton onClick={copyDiv}><span className="material-icons">content_copy</span></CopyButton>
+            <CopyText ref={copy}>{`rnkd.pl/${id || ''}`}</CopyText>
+          </CopyContainer>
+        </CardBottom>
+      </form>
       {pollResultData ? (
         <Results
           pairs={rankedPairs}

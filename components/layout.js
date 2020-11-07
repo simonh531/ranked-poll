@@ -94,7 +94,7 @@ const Copyright = styled.div`
   /* white-space: nowrap; */
 `;
 
-const description = 'Instantly create and share ranked vote polls! Learn about ranked voting and why we should use it. Free and no sign up needed!';
+const description = 'Instantly create and share ranked vote polls! Learn about ranked voting and its uses. Free and no sign up needed! Open Source!';
 
 const structuredData = {
   __html: `{
