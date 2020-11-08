@@ -187,6 +187,33 @@ const LabelText = styled.span`
   transition: top 0.1s;
 `;
 
+const ViewedPollsCard = styled(Card)`
+  padding: 12px;
+  align-self: start;
+`;
+
+const ViewedPolls = styled.h3`
+  margin: 0 0 4px;
+  font-size: 1.2em;
+  font-weight: 400;
+  font-family: Open Sans, sans-serif;
+`;
+
+const ViewedPollsA = styled.a`
+  display: block;
+  line-height: 1.4;
+  font-family: Open Sans, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  color: black;
+
+  :hover {
+    text-decoration: underline;
+  }
+`;
+
 const CREATE_POLL = gql`
   mutation createPoll($input: CreatePollInput!) {
     createPoll(input: $input) {
@@ -238,6 +265,14 @@ const Index = ({ dataLayer }) => {
       },
     },
   });
+
+  const [history, setHistory] = useState([]);
+  useEffect(() => {
+    const historyItem = localStorage.getItem('history');
+    if (historyItem) {
+      setHistory(JSON.parse(historyItem));
+    }
+  }, []);
 
   const changeColor = (e) => {
     setColorName(e.target.value);
@@ -327,7 +362,17 @@ const Index = ({ dataLayer }) => {
           <Link href="/about/" passHref><Why>Why?</Why></Link>
         </Subtitle>
       </Top>
-      <Card area="center" as="form">
+      {history && history.length ? (
+        <ViewedPollsCard area="center-right" smallArea="center">
+          <ViewedPolls>Viewed Polls</ViewedPolls>
+          {history.map(({ id, title: itemTitle }) => (
+            <Link href={`/poll/${id}`} key={id} passHref>
+              <ViewedPollsA>{itemTitle}</ViewedPollsA>
+            </Link>
+          ))}
+        </ViewedPollsCard>
+      ) : null}
+      <Card area="center" smallArea="bottom" as="form">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question

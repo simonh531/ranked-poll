@@ -389,11 +389,36 @@ const Poll = ({
     description, count, cookieCount, ipCount, userCount, protection, createdAt,
   } = pollData?.poll || {};
 
+  // initialize
   useEffect(() => {
     if (id) {
       getPollData();
+      const historyString = localStorage.getItem('history');
+      if (!historyString) {
+        localStorage.setItem('history', JSON.stringify([{ id, title }]));
+      } else {
+        const history = JSON.parse(historyString);
+        const index = history.findIndex(({ id: itemId }) => itemId === id);
+        if (index !== -1) {
+          history.splice(index, 1);
+        }
+        if (history.unshift({ id, title }) > 10) {
+          history.pop();
+        }
+        localStorage.setItem('history', JSON.stringify(history));
+      }
     }
   }, [id]);
+  useEffect(() => {
+    if (color) {
+      themeColorVar(color);
+    }
+  }, [color]);
+  useEffect(() => {
+    if (title) {
+      router.replace(`/poll/${id}/${title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')}`);
+    }
+  }, [title]);
 
   let actualCount;
 
@@ -452,20 +477,6 @@ const Poll = ({
     }
     return options;
   }, [options, randomize]);
-
-  useEffect(() => {
-    if (color) {
-      themeColorVar(color);
-    }
-  }, [color]);
-
-  useEffect(() => {
-    if (title) {
-      router.replace(`/poll/${id}/${
-        title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')
-      }`);
-    }
-  }, [title]);
 
   const copyDiv = () => {
     if (copy.current) {
