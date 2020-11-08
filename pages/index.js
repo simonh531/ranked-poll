@@ -7,63 +7,10 @@ import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import PollOption from '../components/pollOption';
 import { themeColorVar } from '../components/layout';
+import Tooltip from '../components/tooltip';
 
 import { Card, Description, SubmitButton } from '../style/card';
 import Colors, { toSecondary } from '../style/colors';
-
-const TooltipArea = styled.button`
-  padding: 0;
-  border: 0;
-  cursor: pointer;
-  background-color: transparent;
-`;
-
-const HelpIcon = styled.span`
-  display: inline-block;
-  text-align: center;
-  line-height: 1em;
-  border: 1px solid black;
-  border-radius: 50%;
-  height: 1.1em;
-  width: 1.1em;
-  font-size: 0.9em;
-`;
-
-const HintText = styled.span`
-  margin-left: 8px;
-  font-size: 0.9em;
-  color: white;
-  background-color: #666666;
-  border-radius: 2px;
-  padding: 0 4px;
-  position: relative;
-`;
-
-const LeftArrow = styled.div`
-  position: absolute;
-  right: 100%;
-  top: calc(50% - 6px);
-  border: 6px solid transparent;
-  border-left-width: 0;
-  border-right-color: #666666;
-`;
-
-const Tooltip = ({ children }) => {
-  const [show, setShow] = useState(false);
-  const toggleShow = () => setShow(!show);
-
-  return (
-    <TooltipArea onClick={toggleShow}>
-      <HelpIcon>?</HelpIcon>
-      {show && (
-      <HintText>
-        <LeftArrow />
-        {children}
-      </HintText>
-      )}
-    </TooltipArea>
-  );
-};
 
 const Top = styled.div`
   grid-area: title;
@@ -189,7 +136,11 @@ const LabelText = styled.span`
 
 const ViewedPollsCard = styled(Card)`
   padding: 12px;
-  align-self: start;
+  justify-self: start;
+
+  @media (max-width: 768px) {
+    place-self: stretch;
+  }
 `;
 
 const ViewedPolls = styled.h3`

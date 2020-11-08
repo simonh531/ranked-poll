@@ -10,47 +10,12 @@ import styled from 'styled-components';
 
 import PollOption from '../../components/pollOption';
 import { themeColorVar } from '../../components/layout';
+import Section from '../../components/section';
+import Tooltip from '../../components/tooltip';
 import { toTertiary } from '../../style/colors';
 import { Card, Description, SubmitButton } from '../../style/card';
 import Pool from '../../postgresPool';
 import calc from '../../rankedPairsCalc';
-
-const Header = styled.h3`
-  font-size: ${(props) => props.headerSize}em;
-  font-family: Merriweather, serif;
-  font-weight: 400;
-  cursor: pointer;
-`;
-
-const HeaderControl = styled.span`
-  font-size: 1.4em;
-  vertical-align: bottom;
-`;
-
-const Children = styled.div`
-  font-family: Open Sans, sans-serif;
-`;
-
-const Section = ({ children, title, headerSize }) => {
-  const [show, setShow] = useState(false);
-  const toggleShow = () => setShow(!show);
-
-  return (
-    <>
-      <Header headerSize={headerSize} onClick={toggleShow}>
-        <HeaderControl className="material-icons">
-          {show ? 'expand_less' : 'expand_more'}
-        </HeaderControl>
-        {title}
-      </Header>
-      {show ? (
-        <Children>
-          {children}
-        </Children>
-      ) : null}
-    </>
-  );
-};
 
 const PreferenceHeader = styled.th`
   text-align: left;
@@ -273,7 +238,13 @@ const OptionTop = styled.div`
   justify-content: space-between;
 `;
 
-const LowVote = styled.label`
+const LowVote = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const LowVoteLabel = styled.label`
+  margin-right: 1ch;
   display: flex;
   align-items: center;
   font-family: Open Sans, sans-serif;
@@ -714,13 +685,16 @@ const Poll = ({
               </div>
             ) : null}
             <LowVote>
-              <Button type="button" onClick={toggleLowVote}>
-                <LowVoteIcon className="material-icons">
-                  {allowLowVote ? 'radio_button_checked' : 'radio_button_unchecked'}
-                </LowVoteIcon>
-              </Button>
-              {' '}
-              Advanced
+              <LowVoteLabel>
+                <Button type="button" onClick={toggleLowVote}>
+                  <LowVoteIcon className="material-icons">
+                    {allowLowVote ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </LowVoteIcon>
+                </Button>
+                {' '}
+                Advanced
+              </LowVoteLabel>
+              <Tooltip>Enables Low Votes</Tooltip>
             </LowVote>
           </>
         )}
