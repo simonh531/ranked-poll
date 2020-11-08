@@ -7,63 +7,10 @@ import { gql, useMutation, useReactiveVar } from '@apollo/client';
 import styled from 'styled-components';
 import PollOption from '../components/pollOption';
 import { themeColorVar } from '../components/layout';
+import Tooltip from '../components/tooltip';
 
 import { Card, Description, SubmitButton } from '../style/card';
 import Colors, { toSecondary } from '../style/colors';
-
-const TooltipArea = styled.button`
-  padding: 0;
-  border: 0;
-  cursor: pointer;
-  background-color: transparent;
-`;
-
-const HelpIcon = styled.span`
-  display: inline-block;
-  text-align: center;
-  line-height: 1em;
-  border: 1px solid black;
-  border-radius: 50%;
-  height: 1.1em;
-  width: 1.1em;
-  font-size: 0.9em;
-`;
-
-const HintText = styled.span`
-  margin-left: 8px;
-  font-size: 0.9em;
-  color: white;
-  background-color: #666666;
-  border-radius: 2px;
-  padding: 0 4px;
-  position: relative;
-`;
-
-const LeftArrow = styled.div`
-  position: absolute;
-  right: 100%;
-  top: calc(50% - 6px);
-  border: 6px solid transparent;
-  border-left-width: 0;
-  border-right-color: #666666;
-`;
-
-const Tooltip = ({ children }) => {
-  const [show, setShow] = useState(false);
-  const toggleShow = () => setShow(!show);
-
-  return (
-    <TooltipArea onClick={toggleShow}>
-      <HelpIcon>?</HelpIcon>
-      {show && (
-      <HintText>
-        <LeftArrow />
-        {children}
-      </HintText>
-      )}
-    </TooltipArea>
-  );
-};
 
 const Top = styled.div`
   grid-area: title;
@@ -187,6 +134,37 @@ const LabelText = styled.span`
   transition: top 0.1s;
 `;
 
+const ViewedPollsCard = styled(Card)`
+  padding: 12px;
+  justify-self: start;
+
+  @media (max-width: 768px) {
+    place-self: stretch;
+  }
+`;
+
+const ViewedPolls = styled.h3`
+  margin: 0 0 4px;
+  font-size: 1.2em;
+  font-weight: 400;
+  font-family: Open Sans, sans-serif;
+`;
+
+const ViewedPollsA = styled.a`
+  display: block;
+  line-height: 1.4;
+  font-family: Open Sans, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  color: black;
+
+  :hover {
+    text-decoration: underline;
+  }
+`;
+
 const CREATE_POLL = gql`
   mutation createPoll($input: CreatePollInput!) {
     createPoll(input: $input) {
@@ -238,6 +216,14 @@ const Index = ({ dataLayer }) => {
       },
     },
   });
+
+  const [history, setHistory] = useState([]);
+  useEffect(() => {
+    const historyItem = localStorage.getItem('history');
+    if (historyItem) {
+      setHistory(JSON.parse(historyItem));
+    }
+  }, []);
 
   const changeColor = (e) => {
     setColorName(e.target.value);
@@ -327,7 +313,17 @@ const Index = ({ dataLayer }) => {
           <Link href="/about/" passHref><Why>Why?</Why></Link>
         </Subtitle>
       </Top>
-      <Card area="center" as="form">
+      {history && history.length ? (
+        <ViewedPollsCard area="center-right" smallArea="center">
+          <ViewedPolls>Viewed Polls</ViewedPolls>
+          {history.map(({ id, title: itemTitle }) => (
+            <Link href={`/poll/${id}`} key={id} passHref>
+              <ViewedPollsA>{itemTitle}</ViewedPollsA>
+            </Link>
+          ))}
+        </ViewedPollsCard>
+      ) : null}
+      <Card area="center" smallArea="bottom" as="form">
         <Label htmlFor="question">
           <LabelText show={showTitleLabel}>Question</LabelText>
           <Question

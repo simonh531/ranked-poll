@@ -80,14 +80,16 @@ const Spacer = styled.div`
 `;
 
 const Grid = styled.main`
+  padding: 8px;
   flex: 1;
   display: grid;
   grid-template-columns: 1fr minmax(304px, 60%) 1fr;
-  grid-template-rows: minmax(8px, max-content) min-content minmax(8px, max-content);
+  grid-template-rows: max-content min-content max-content;
   gap: 8px;
   grid-template-areas: 
   ". title ." 
-  "center-left center center-right";
+  "center-left center center-right"
+  ". bottom .";
 `;
 
 const Copyright = styled.div`

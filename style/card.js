@@ -9,6 +9,12 @@ export const Card = styled.div`
   border-radius: 4px;
   box-shadow: 0 0 2px 2px ${() => toTertiary(useReactiveVar(themeColorVar))};
   grid-area: ${(props) => props.area};
+
+  ${(props) => (props.smallArea ? `
+  @media (max-width: 768px) {
+    grid-area: ${props.smallArea};
+  }
+  ` : '')}
 `;
 
 export const Description = styled.div`
