@@ -9,10 +9,11 @@ const write = async (cursor, stream) => {
       throw err;
     }
     if (rows.length) {
-      rows.forEach((row) => {
+      // eslint-disable-next-line camelcase
+      rows.forEach(({ id, title, created_at }) => {
         stream.write({
-          url: `/poll/${row.id}`,
-          lastmod: row.created_at,
+          url: `/poll/${id}/${title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')}`,
+          lastmod: created_at,
         });
       });
       await write(cursor, stream);
@@ -63,7 +64,7 @@ export default async (req, res) => {
       priority: 0.7,
     });
 
-    const text = 'SELECT id, created_at FROM poll ORDER BY created_at';
+    const text = 'SELECT id, title, created_at FROM poll ORDER BY created_at';
     const client = await Pool.connect();
     const cursor = client.query(new Cursor(text));
 
