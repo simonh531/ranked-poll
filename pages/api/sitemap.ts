@@ -1,9 +1,10 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createClient } from 'contentful';
 import Cursor from 'pg-cursor';
 import Pool from '../../postgresPool';
 
-const write = async (cursor, stream) => {
+const write = async (cursor:Cursor, stream:SitemapStream) => {
   cursor.read(100, async (err, rows) => {
     if (err) {
       throw err;
@@ -13,6 +14,7 @@ const write = async (cursor, stream) => {
       rows.forEach(({ id, title, created_at }) => {
         stream.write({
           url: `/poll/${id}/${title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')}`,
+          // eslint-disable-next-line camelcase
           lastmod: created_at,
         });
       });
@@ -23,7 +25,7 @@ const write = async (cursor, stream) => {
   });
 };
 
-export default async (req, res) => {
+export default async (req:NextApiRequest, res:NextApiResponse) => {
   try {
     const smStream = new SitemapStream({
       hostname: `https://${req.headers.host}`,
@@ -45,8 +47,8 @@ export default async (req, res) => {
       host: process.env.CONTENTFUL_HOST,
     });
 
-    const entries = await contentfulClient.getEntries({
-      content_type: 'page',
+    const entries = await contentfulClient.getEntries<{title: string}>({
+      content_type: 'aboutPage',
       select: 'fields.title',
     });
 
@@ -81,7 +83,8 @@ export default async (req, res) => {
     // Display output to user
     res.end(sitemapOutput);
   } catch (e) {
-    console.log(e);
+    // eslint-disable-next-line no-console
+    console.error(e);
     res.send(JSON.stringify(e));
   }
 };

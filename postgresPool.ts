@@ -2,6 +2,9 @@ import { Pool } from 'pg';
 import crypto from 'crypto';
 import { pgSettings } from './encrypted';
 
+// the reason we keep this in a separate file is because it needs to be
+// accessible by multiple APIs
+
 let decrypted;
 if (
   process.env.NODE_ENV === 'production'
@@ -19,7 +22,10 @@ if (
 }
 
 const pgConfig = {
+  max: parseInt(process.env.PGPOOLCONNECTIONS, 10),
   ssl: decrypted,
 };
 
+// eslint-disable-next-line no-console
+console.log('Initializing new pg Pool');
 export default new Pool(pgConfig);

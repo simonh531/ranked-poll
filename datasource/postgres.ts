@@ -1,25 +1,50 @@
 import { DataSource } from 'apollo-datasource';
+import { Pool } from 'pg';
+// import crypto from 'crypto';
 import shortid from 'shortid';
 import { v4 as uuidv4 } from 'uuid';
-import Colors from '../style/colors';
+import { mainColor } from '../style/colors';
+// import { pgSettings } from './encrypted';
+
+// let decrypted;
+// if (
+//   process.env.NODE_ENV === 'production'
+//   && process.env.ENCRYPTION_KEY
+//   && process.env.ENCRYPTION_IV
+// ) {
+//   const decipher = crypto.createDecipheriv(
+//     'aes-128-cbc', // algorithm,
+//     process.env.ENCRYPTION_KEY,
+//     process.env.ENCRYPTION_IV,
+//   );
+//   let temp = decipher.update(pgSettings, 'base64', 'utf8');
+//   temp += decipher.final('utf8');
+//   decrypted = JSON.parse(temp);
+// }
+
+// const pgConfig = {
+//   ssl: decrypted,
+// };
+
+// export default new Pool(pgConfig);
 
 export default class PostgresDB extends DataSource {
-  constructor({ pool }) {
+  pool: Pool;
+
+  constructor(pool: Pool) {
     super();
     this.pool = pool;
   }
 
-  /**
-   * This is a function that gets called by ApolloServer when being setup.
-   * This function gets called with the datasource config including things
-   * like caches and context. We'll assign this.context to the request context
-   * here, so we can know about the user making requests
-   */
-  initialize(config) {
-    this.context = config.context;
-  }
-
-  async createPoll(owner = null, title = 'Default Title', description = null, options = [], color = Colors[Object.keys(Colors)[0]], randomize = true, protection = 'cookie_id') {
+  async createPoll(
+    owner = null,
+    title = 'Default Title',
+    description = null,
+    options = [],
+    color = mainColor,
+    randomize = true,
+    protection = 'cookie_id',
+  ) {
     if (options.length) {
       const id = shortid.generate();
       const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize, protection) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
@@ -28,7 +53,7 @@ export default class PostgresDB extends DataSource {
         const res = await this.pool.query(text, values);
         return res.rows[0];
       } catch (err) {
-        console.log(err.stack);
+        console.error(err.stack);
         return null;
       }
     }
@@ -49,7 +74,14 @@ export default class PostgresDB extends DataSource {
     return null;
   }
 
-  async vote(user = null, cookie = null, ip = null, pollId, vote = [], lowVote = []) {
+  async vote(
+    pollId,
+    user = null,
+    cookie = null,
+    ip = null,
+    vote = [],
+    lowVote = [],
+  ) {
     if (pollId && (vote.length || lowVote.length)) {
       const uuid = uuidv4();
       const text = 'INSERT INTO vote(id, user_id, cookie_id, ip, vote, low_vote, poll_id) VALUES($1, $2, $3, $4, $5, $6, $7)';
@@ -64,7 +96,10 @@ export default class PostgresDB extends DataSource {
     return false;
   }
 
-  async getPollResult(id, protection = 'none') {
+  async getPollResult(
+    id,
+    protection = 'none',
+  ) {
     if (id) {
       let text;
       const values = [id];

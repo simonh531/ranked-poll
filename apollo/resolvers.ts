@@ -1,4 +1,4 @@
-import { AuthenticationError, UserInputError } from 'apollo-server-micro';
+// import { AuthenticationError, UserInputError } from 'apollo-server-micro';
 // import { createUser, findUser, validatePassword } from '../lib/user';
 // import { setLoginSession, getLoginSession } from '../lib/auth';
 // import { removeTokenCookie } from '../lib/auth-cookies';
@@ -59,7 +59,13 @@ export default {
         owner, title, description, options, color, randomize, protection,
       } = input;
       return dataSources.postgres.createPoll(
-        owner, title, description, options, color, randomize, protection,
+        owner,
+        title,
+        description,
+        options,
+        color,
+        randomize,
+        protection,
       );
     },
 
@@ -70,7 +76,7 @@ export default {
         user, pollId, vote, lowVote,
       } = input;
 
-      return dataSources.postgres.vote(user, cookieId, ip, pollId, vote, lowVote);
+      return dataSources.postgres.vote(pollId, user, cookieId, ip, vote, lowVote);
     },
   },
 };
