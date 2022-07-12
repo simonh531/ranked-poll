@@ -40,7 +40,7 @@ export const getStaticPaths = async () => ({
     { params: { title: 'Intro' } },
     { params: { title: 'Method' } },
     { params: { title: 'Double Voting' } },
-    { params: { title: 'Open Source' } },
+    // { params: { title: 'Open Source' } },
   ],
   fallback: true,
 });
