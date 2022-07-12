@@ -1,14 +1,13 @@
 import React, {
   useState, useEffect, useMemo, ReactNode,
 } from 'react';
-import {
-  gql, useLazyQuery,
-} from '@apollo/client';
+import { gql, useLazyQuery } from '@apollo/client';
+import { useTheme } from '@mui/material/styles';
 import {
   Box, Typography, Skeleton, Button, ToggleButton, ToggleButtonGroup, Tabs, Tab,
-  TableContainer, Paper, Table, TableBody, TableRow, TableCell, Stack,
+  TableContainer, Paper, Table, TableBody, TableRow, TableCell, Grid,
+  useMediaQuery,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -20,8 +19,8 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import DetailedPollResult from './detailedPollResult';
-import calc from '../rankedPairsCalc';
-import { toHex } from '../pages/poll/[...id]';
+import calc from '../utils/rankedPairsCalc';
+import { toColor } from '../style/colorTools';
 import { barOptions, donutOptions } from '../style/chartOptions';
 
 ChartJS.register(
@@ -58,6 +57,8 @@ function PollResult({
   actualCount: number,
 }) {
   const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [
     getPollResult,
     { /* loading: pollResultLoading, */ data: pollResultData },
@@ -70,13 +71,24 @@ function PollResult({
   const [detailStep, setDetailStep] = useState('grid');
 
   useEffect(() => {
+    if (isXs) { // was big
+      if (tab === 1 && detailStep === 'sort') { // was on "detailed" and "sort"
+        setTab(2);
+      }
+    } else if (tab === 2) { // was small and on "detailed" and "sort"
+      setTab(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isXs]);
+
+  useEffect(() => {
     getPollResult();
-  }, [id, protection]);
+  }, [getPollResult]);
 
   const {
     labels, data, mainPairs, pairMap, rankedPairList, treeSteps,
   } = useMemo(() => {
-    if (pollResultData) {
+    if (pollResultData?.pollResult) {
       const {
         pairs, rankings, rankedPairs, ratioPercents, history,
       } = calc(pollResultData?.pollResult, options);
@@ -113,10 +125,10 @@ function PollResult({
     return {
       labels: [], data: [], mainPairs: [], pairMap: {}, rankedPairList: [], treeSteps: [],
     };
-  }, [pollResultData?.pollResult, options]);
+  }, [pollResultData, options, actualCount]);
 
   let tables:ReactNode = <Skeleton variant="rectangular" height="100%" />;
-  if (tab === 1 && Object.keys(pairMap).length) {
+  if ((tab === 1 || tab === 2) && Object.keys(pairMap).length) {
     tables = (
       <DetailedPollResult
         pairs={pairMap}
@@ -128,37 +140,43 @@ function PollResult({
     );
   } else if (tab === 0 && mainPairs.length) {
     tables = (
-      <Stack spacing={1}>
+      <Grid
+        container
+        spacing={1}
+        direction={isXs ? 'row' : 'column'}
+        sx={{ justifyContent: 'space-between' }}
+      >
         {mainPairs.map((pair, index) => (
-          <TableContainer
-        // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            component={Paper}
-            sx={{ backgroundColor: '#ffffff' }}
-          >
-            <Table size="small">
-              <TableBody>
-                <TableRow>
-                  <TableCell>
-                    {pair[0][0]}
-                  </TableCell>
-                  <TableCell>
-                    {pair[0][1]}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    {pair[1][0]}
-                  </TableCell>
-                  <TableCell>
-                    {pair[1][1]}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+          // eslint-disable-next-line react/no-array-index-key
+          <Grid item key={index}>
+            <TableContainer
+              component={Paper}
+              sx={{ backgroundColor: '#ffffff' }}
+            >
+              <Table size="small">
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      {pair[0][0]}
+                    </TableCell>
+                    <TableCell>
+                      {pair[0][1]}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      {pair[1][0]}
+                    </TableCell>
+                    <TableCell>
+                      {pair[1][1]}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
         ))}
-      </Stack>
+      </Grid>
     );
   }
 
@@ -194,11 +212,8 @@ function PollResult({
               datasets: [{
                 data,
                 backgroundColor: options.map((_, index) => {
-                  const mult = (max - range * (index / options.length)) * 256;
-                  return `#${
-                    toHex(Math.trunc(r * mult) - 1)}${
-                    toHex(Math.trunc(g * mult) - 1)}${
-                    toHex(Math.trunc(b * mult) - 1)}`;
+                  const mult = max - range * (index / options.length);
+                  return toColor(r, g, b, mult);
                 }),
               }],
             }}
@@ -211,19 +226,58 @@ function PollResult({
     }
   }
 
-  return (
-    <>
+  let resultView;
+  if (isXs) {
+    resultView = (
+      <>
+        <Tabs
+          variant="fullWidth"
+          value={tab}
+          onChange={(_, newValue) => {
+            setTab(newValue);
+            if (newValue === 1) {
+              setDetailStep('grid');
+            } else if (newValue === 2) {
+              setDetailStep('sort');
+            }
+          }}
+          sx={{ marginTop: 1, marginBottom: 1 }}
+        >
+          <Tab label="Overview" sx={{ textTransform: 'none' }} />
+          <Tab label="Grid" sx={{ textTransform: 'none' }} />
+          <Tab label="Detailed" sx={{ textTransform: 'none' }} />
+        </Tabs>
+        {tables}
+        {tab === 0 ? (
+          <>
+            <Tabs
+              variant="fullWidth"
+              value={chartType === 'bar' ? 0 : 1}
+              onChange={(_, newValue) => setChartType(newValue === 0 ? 'bar' : 'donut')}
+              sx={{ marginTop: 1, marginBottom: 1 }}
+            >
+              <Tab label="Bar" sx={{ textTransform: 'none' }} />
+              <Tab label="Donut" sx={{ textTransform: 'none' }} />
+            </Tabs>
+            <Box>
+              {chart}
+            </Box>
+          </>
+        ) : null}
+      </>
+    );
+  } else {
+    resultView = (
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: 'auto 1fr',
         gridTemplateRows: 'auto auto',
         gap: 1,
         marginTop: 1,
-        marginBottom: 1,
       }}
       >
         <Tabs
-          value={tab}
+          value={tab < 2 ? tab : 1}
           onChange={(_, newValue) => setTab(newValue)}
           sx={{ gridColumn: '1', gridRow: '1' }}
         >
@@ -272,19 +326,37 @@ function PollResult({
           </Box>
         )}
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography sx={{ flex: '1' }}>
-          {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
-        </Typography>
-        <Button
-          onClick={() => navigator.clipboard.writeText(`rnkd.pl/${id}?results`)}
-          variant="contained"
-          startIcon={<span className="material-icons">content_copy</span>}
-          sx={{ textTransform: 'none' }}
-        >
-          {`rnkd.pl/${id}?results`}
-        </Button>
-      </Box>
+    );
+  }
+
+  return (
+    <>
+      {resultView}
+      <Grid container spacing={1} sx={{ justifyContent: 'space-evenly', marginTop: 1 }}>
+        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{
+            fontSize: {
+              xs: '0.925em',
+              sm: '1em',
+            },
+          }}
+          >
+            {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
+          </Typography>
+        </Grid>
+        <Grid item sx={{ flex: '1', display: { xs: 'none', sm: 'block' } }} />
+        <Grid item>
+          <Button
+            size={isXs ? 'small' : 'medium'}
+            onClick={() => navigator.clipboard.writeText(`rnkd.pl/${id}`)}
+            variant="contained"
+            startIcon={<span className="material-icons">content_copy</span>}
+            sx={{ textTransform: 'none' }}
+          >
+            {`rnkd.pl/${id}`}
+          </Button>
+        </Grid>
+      </Grid>
     </>
   );
 }

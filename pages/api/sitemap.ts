@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createClient } from 'contentful';
 import Cursor from 'pg-cursor';
-import Pool from '../../postgresPool';
+import Pool from '../../utils/postgresPool';
 
 const write = async (cursor:Cursor, stream:SitemapStream) => {
   cursor.read(100, async (err, rows) => {
@@ -25,7 +25,7 @@ const write = async (cursor:Cursor, stream:SitemapStream) => {
   });
 };
 
-export default async (req:NextApiRequest, res:NextApiResponse) => {
+async function sitemap(req:NextApiRequest, res:NextApiResponse) {
   try {
     const smStream = new SitemapStream({
       hostname: `https://${req.headers.host}`,
@@ -87,4 +87,6 @@ export default async (req:NextApiRequest, res:NextApiResponse) => {
     console.error(e);
     res.send(JSON.stringify(e));
   }
-};
+}
+
+export default sitemap;

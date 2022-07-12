@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import {
-  Typography, TextField, ToggleButton, ToggleButtonGroup,
+  Typography, TextField, ToggleButton, ToggleButtonGroup, Tabs, Tab,
   TableContainer, Paper, Table, TableBody, TableRow, TableCell, Stack,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -22,8 +22,8 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 
 import AboutLayout from '../../components/aboutLayout';
 import options from '../../style/richTextStyles';
-import { toHex } from '../poll/[...id]';
-import { fromPairsCalc } from '../../rankedPairsCalc';
+import { toColor } from '../../style/colorTools';
+import { fromPairsCalc } from '../../utils/rankedPairsCalc';
 import { barOptions, donutOptions } from '../../style/chartOptions';
 
 ChartJS.register(
@@ -87,13 +87,6 @@ const optionIndexTable = {
   c: 2,
 };
 
-function toColor(r, g, b, mult) {
-  return `#${
-    toHex(Math.trunc(r * mult * 256) - 1)}${
-    toHex(Math.trunc(g * mult * 256) - 1)}${
-    toHex(Math.trunc(b * mult * 256) - 1)}`;
-}
-
 function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
   pages:string[]
   prePlaygroundText:Document
@@ -143,7 +136,7 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
       <Typography
         variant="h1"
         sx={{
-          fontSize: '2.8em',
+          fontSize: '2.6em',
           textAlign: 'center',
         }}
       >
@@ -151,7 +144,7 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
       </Typography>
       {documentToReactComponents(prePlaygroundText, options)}
       <Stack spacing={1}>
-        <Stack spacing={1} direction="row">
+        <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }}>
           <InputTable
             value1Name="A"
             value2Name="B"
@@ -177,13 +170,14 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
             setValue2={setAPairCA}
           />
         </Stack>
-        <Stack spacing={1} direction="row">
+        <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }}>
           <ToggleButtonGroup
             orientation="vertical"
             value={chartType}
             exclusive
             onChange={(_, type) => setChartType(type)}
             size="small"
+            sx={{ display: { xs: 'none', sm: 'block' } }}
           >
             <ToggleButton value="bar">
               <span className="material-icons">bar_chart</span>
@@ -192,6 +186,14 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
               <span className="material-icons">donut_large</span>
             </ToggleButton>
           </ToggleButtonGroup>
+          <Tabs
+            sx={{ display: { xs: 'block', sm: 'none' } }}
+            value={chartType === 'bar' ? 0 : 1}
+            onChange={(_, value) => setChartType(value === 0 ? 'bar' : 'donut')}
+          >
+            <Tab label="Bar Chart" sx={{ textTransform: 'none' }} />
+            <Tab label="Donut Chart" sx={{ textTransform: 'none' }} />
+          </Tabs>
           <Paper sx={{ backgroundColor: '#ffffff', padding: 1, flex: 1 }}>
             {chartType === 'bar' ? (
               <Bar

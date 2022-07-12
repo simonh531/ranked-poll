@@ -37,7 +37,7 @@ function AboutHome({ pages = [], text }:{ pages: string[], text: Document }) {
       </Head>
       <Typography sx={{
         fontFamily: 'Righteous, cursive',
-        fontSize: '2.8em',
+        fontSize: '2.6em',
         textAlign: 'center',
       }}
       >

@@ -78,15 +78,19 @@ export const makePairs = (
   options:string[],
 ) => {
   const pairs:PairMapping = {};
+
+  options.forEach((option, index) => {
+    for (let i = index + 1; i < options.length; i += 1) {
+      pairs[JSON.stringify([option, options[i]].sort())] = [0, 0];
+    }
+  });
+
   function tally(higher:string, lower:string, count:number) {
     const alphabeticalOrder = [higher, lower].sort();
     const key = JSON.stringify(alphabeticalOrder);
     let higherIndex = 0;
     if (alphabeticalOrder[0] !== higher) {
       higherIndex = 1;
-    }
-    if (!pairs[key]) {
-      pairs[key] = [0, 0];
     }
     pairs[key][higherIndex] += count;
   }

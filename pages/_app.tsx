@@ -19,7 +19,7 @@ const tagManagerArgs = {
   gtmId: 'GTM-5655TMW', // is public information
 };
 
-export default function ({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
@@ -43,3 +43,5 @@ export default function ({ Component, pageProps }: AppProps) {
   // </Provider>
   );
 }
+
+export default App;

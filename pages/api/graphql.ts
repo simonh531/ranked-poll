@@ -5,7 +5,7 @@ import shortid from 'shortid';
 import typeDefs from '../../apollo/type-defs';
 import resolvers from '../../apollo/resolvers';
 import PostgresDB from '../../datasource/postgres';
-import Pool from '../../postgresPool';
+import Pool from '../../utils/postgresPool';
 
 const apolloServer = new ApolloServer({
   typeDefs,

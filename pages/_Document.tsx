@@ -16,7 +16,7 @@ const structuredData = {
   }`,
 };
 
-export default function () {
+function Document() {
   return (
     <Html>
       <Head>
@@ -45,3 +45,5 @@ export default function () {
     </Html>
   );
 }
+
+export default Document;

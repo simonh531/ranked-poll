@@ -3,8 +3,10 @@ import React, {
 } from 'react';
 import { useRouter } from 'next/router';
 import { gql, useMutation } from '@apollo/client';
+import { useTheme } from '@mui/material/styles';
 import {
-  Box, Typography, Divider, FormGroup, FormControlLabel, IconButton, Switch, Button,
+  Box, Typography, Divider, FormGroup, FormControlLabel,
+  IconButton, Switch, Button, Grid, useMediaQuery,
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { RankedOption, UnrankedOption, SkeletonOption } from './pollOption';
@@ -87,6 +89,9 @@ function PollVote({
   const reset = () => {
     setRank({ up: [], down: [] });
   };
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [submitted, setSubmitted] = useState(false);
   const [advanced, setAdvanced] = useState(false);
@@ -241,49 +246,68 @@ function PollVote({
           )}
         label="Advanced"
       />
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        { submitted ? (
-          <Button
-            variant="contained"
-            sx={{ textTransform: 'none' }}
-            disabled
-          >
-            Vote Submitted
-          </Button>
-        ) : (
-          <LoadingButton
-            variant="contained"
-            sx={{ textTransform: 'none' }}
-            loading={loading}
-            endIcon={<span className="material-icons">how_to_vote</span>}
-            onClick={() => vote()}
-          >
-            Vote
-          </LoadingButton>
-        )}
-        <Typography sx={{ flex: '1', marginLeft: 1 }}>
-          {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
-        </Typography>
-        <Button
-          variant="text"
-          sx={{ textTransform: 'none', color: 'text.primary' }}
-          onClick={() => router.push(
-            `${router.asPath}/?results`,
-            undefined,
-            { shallow: true },
+      <Grid container spacing={1} sx={{ justifyContent: 'space-evenly' }}>
+        <Grid item>
+          { submitted ? (
+            <Button
+              size={isXs ? 'small' : 'medium'}
+              variant="contained"
+              sx={{ textTransform: 'none' }}
+              disabled
+            >
+              Submitted
+            </Button>
+          ) : (
+            <LoadingButton
+              size={isXs ? 'small' : 'medium'}
+              variant="contained"
+              sx={{ textTransform: 'none' }}
+              loading={loading}
+              endIcon={<span className="material-icons">how_to_vote</span>}
+              onClick={() => vote()}
+            >
+              Vote
+            </LoadingButton>
           )}
-        >
-          See Results
-        </Button>
-        <Button
-          onClick={() => navigator.clipboard.writeText(`rnkd.pl/${id}`)}
-          variant="contained"
-          startIcon={<span className="material-icons">content_copy</span>}
-          sx={{ textTransform: 'none' }}
-        >
-          {`rnkd.pl/${id}`}
-        </Button>
-      </Box>
+        </Grid>
+        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{
+            fontSize: {
+              xs: '0.8em',
+              sm: '1em',
+            },
+          }}
+          >
+            {(actualCount || 0) + (actualCount === 1 ? ' vote' : ' votes')}
+          </Typography>
+        </Grid>
+        <Grid item sx={{ flex: '1', display: { xs: 'none', sm: 'block' } }} />
+        <Grid item>
+          <Button
+            size={isXs ? 'small' : 'medium'}
+            variant="text"
+            sx={{ textTransform: 'none', color: 'text.primary' }}
+            onClick={() => router.push(
+              `${router.asPath}?results`,
+              undefined,
+              { shallow: true },
+            )}
+          >
+            See Results
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            size={isXs ? 'small' : 'medium'}
+            onClick={() => navigator.clipboard.writeText(`rnkd.pl/${id}`)}
+            variant="contained"
+            startIcon={<span className="material-icons">content_copy</span>}
+            sx={{ textTransform: 'none' }}
+          >
+            {`rnkd.pl/${id}`}
+          </Button>
+        </Grid>
+      </Grid>
     </>
   );
 }

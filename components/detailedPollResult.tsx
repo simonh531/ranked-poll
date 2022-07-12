@@ -1,14 +1,16 @@
 import React, {
   useState,
 } from 'react';
+import { useTheme } from '@mui/material/styles';
 import {
-  Box, Popover, Pagination, Stack, Card, Chip, Typography,
+  Box, Popover, Pagination, Stack, Card, Chip, Typography, useMediaQuery,
   TableContainer, Paper, Table, TableBody, TableHead, TableRow, TableCell,
+  Tabs, Tab,
 } from '@mui/material';
 import { useReactiveVar } from '@apollo/client';
 import {
   PairMapping, Pair, Nodes, makeRanks,
-} from '../rankedPairsCalc';
+} from '../utils/rankedPairsCalc';
 import { themeColorVar } from './layout';
 
 function ComparisonCell({
@@ -100,6 +102,11 @@ function DetailedPollResult({
   detailStep: string,
   history: Nodes[],
 }) {
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [tab, setTab] = useState(0);
+
   const [step, setStep] = useState(1);
   const { rankings } = makeRanks(history[step - 1], pairs, options);
   const themeColor = useReactiveVar(themeColorVar);
@@ -151,102 +158,167 @@ function DetailedPollResult({
       </Box>
     );
   } if (detailStep === 'sort') {
-    return (
-      <>
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Pagination count={history.length} page={step} onChange={(_, value) => setStep(value)} />
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-          <Box>
-            <TableContainer sx={{ paddingBottom: '4px' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      Pair Matchup
-                    </TableCell>
-                    <TableCell>
-                      Strength of Victory
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rankedPairs.map((pair, index) => (
-                    <TableRow
+    const pairList = (
+      <Box>
+        <TableContainer sx={{ paddingBottom: '4px' }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  Pair Matchup
+                </TableCell>
+                <TableCell>
+                  Strength of Victory
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rankedPairs.map((pair, index) => (
+                <TableRow
                       // eslint-disable-next-line react/no-array-index-key
-                      key={index}
-                      sx={{
-                        opacity: step - 1 > index ? '0.4' : '1',
-                        outline: step - 1 === index ? `4px solid ${themeColor}` : '',
-                        cursor: step - 1 === index ? '' : 'pointer',
-                        '&:hover': {
-                          boxShadow: step - 1 === index ? '' : `inset 0 0 4px 1px ${themeColor}`,
-                        },
-                      }}
-                      onClick={() => setStep(index + 1)}
+                  key={index}
+                  sx={{
+                    opacity: step - 1 > index ? '0.4' : '1',
+                    outline: step - 1 === index ? `4px solid ${themeColor}` : '',
+                    cursor: step - 1 === index ? '' : 'pointer',
+                    '&:hover': {
+                      boxShadow: step - 1 === index ? '' : `inset 0 0 4px 1px ${themeColor}`,
+                    },
+                  }}
+                  onClick={() => setStep(index + 1)}
+                >
+                  <TableCell>
+                    <TableContainer
+                      component={Paper}
+                      sx={{ backgroundColor: '#ffffff' }}
                     >
+                      <Table size="small">
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>
+                              {pair.winner.name}
+                            </TableCell>
+                            <TableCell>
+                              {pair.winner.votes}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>
+                              {pair.loser.name}
+                            </TableCell>
+                            <TableCell>
+                              {pair.loser.votes}
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </TableCell>
+                  <TableCell>
+                    {pair.winner.votes / (pair.winner.votes + pair.loser.votes + 1)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    );
+    const rankingStack = (
+      <Stack spacing={1} sx={{ width: { xs: '100%', sm: '400px' } }}>
+        {rankings.map((rank, index) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <Card key={index} sx={{ padding: 1, display: 'flex', backgroundColor: '#ffffff' }}>
+            <Typography variant="h4">
+              {index + 1}
+            </Typography>
+            <Box sx={{
+              display: 'flex', flex: '1', alignItems: 'center', justifyContent: 'space-evenly',
+            }}
+            >
+              {rank.map((option) => (
+                <Chip
+                  label={option}
+                  key={option}
+                  color={
+                    option === rankedPairs[step - 1].winner.name
+                    || option === rankedPairs[step - 1].loser.name
+                      ? 'primary' : 'default'
+                  }
+                />
+              ))}
+            </Box>
+          </Card>
+        ))}
+      </Stack>
+    );
+
+    if (isXs) {
+      return (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 1 }}>
+            <Pagination
+              size="small"
+              count={history.length}
+              page={step}
+              onChange={(_, value) => setStep(value)}
+            />
+          </Box>
+          <Tabs
+            variant="fullWidth"
+            value={tab}
+            onChange={(_, value) => setTab(value)}
+            sx={{ marginBottom: 1 }}
+          >
+            <Tab label="Rankings" sx={{ textTransform: 'none' }} />
+            <Tab label="Ranked Pairs" sx={{ textTransform: 'none' }} />
+          </Tabs>
+          {tab === 0 ? (
+            <>
+              <TableContainer
+                component={Paper}
+                sx={{ backgroundColor: '#ffffff', marginBottom: 1 }}
+              >
+                <Table size="small">
+                  <TableBody>
+                    <TableRow>
                       <TableCell>
-                        <TableContainer
-                          component={Paper}
-                          sx={{ backgroundColor: '#ffffff' }}
-                        >
-                          <Table size="small">
-                            <TableBody>
-                              <TableRow>
-                                <TableCell>
-                                  {pair.winner.name}
-                                </TableCell>
-                                <TableCell>
-                                  {pair.winner.votes}
-                                </TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell>
-                                  {pair.loser.name}
-                                </TableCell>
-                                <TableCell>
-                                  {pair.loser.votes}
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
+                        {rankedPairs[step - 1].winner.name}
                       </TableCell>
                       <TableCell>
-                        {pair.winner.votes / (pair.winner.votes + pair.loser.votes + 1)}
+                        {rankedPairs[step - 1].winner.votes}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-          <Stack spacing={1} sx={{ width: '400px' }}>
-            {rankings.map((rank, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <Card key={index} sx={{ padding: 1, display: 'flex', backgroundColor: '#ffffff' }}>
-                <Typography variant="h4">
-                  {index + 1}
-                </Typography>
-                <Box sx={{
-                  display: 'flex', flex: '1', alignItems: 'center', justifyContent: 'space-evenly',
-                }}
-                >
-                  {rank.map((option) => (
-                    <Chip
-                      label={option}
-                      key={option}
-                      color={
-                        option === rankedPairs[step - 1].winner.name
-                        || option === rankedPairs[step - 1].loser.name
-                          ? 'primary' : 'default'
-                      }
-                    />
-                  ))}
-                </Box>
-              </Card>
-            ))}
-          </Stack>
+                    <TableRow>
+                      <TableCell>
+                        {rankedPairs[step - 1].loser.name}
+                      </TableCell>
+                      <TableCell>
+                        {rankedPairs[step - 1].loser.votes}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              {rankingStack}
+            </>
+          ) : pairList}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 1 }}>
+          <Pagination
+            count={history.length}
+            page={step}
+            onChange={(_, value) => setStep(value)}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          {pairList}
+          {rankingStack}
         </Box>
       </>
     );

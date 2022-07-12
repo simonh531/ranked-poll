@@ -11,7 +11,6 @@ import {
   FormControlLabel, RadioGroup, Radio,
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-// import PollOption from '../components/pollOption';
 import { DataLayerArgs } from 'react-gtm-module';
 import { themeColorVar } from '../components/layout';
 import { mainColor } from '../style/colors';
@@ -106,15 +105,8 @@ function Home({ dataLayer }:{ dataLayer: (dataLayerArgs: DataLayerArgs) => void}
     if (themeColor === '#bbb') {
       themeColorVar(mainColor);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // const [history, setHistory] = useState([]);
-  // useEffect(() => {
-  //   const historyItem = localStorage.getItem('history');
-  //   if (historyItem) {
-  //     setHistory(JSON.parse(historyItem));
-  //   }
-  // }, []);
 
   const optionValues = options.map((idValuePair) => idValuePair[1].replace(/\s/g, ''));
   let invalid = false;
@@ -141,10 +133,10 @@ function Home({ dataLayer }:{ dataLayer: (dataLayerArgs: DataLayerArgs) => void}
 
   useEffect(() => {
     const id = data?.createPoll?.id;
-    if (id) {
+    if (id && router) {
       router.push(`/poll/${id}`);
     }
-  }, [data]);
+  }, [data, router]);
 
   return (
     <Box sx={{
@@ -158,10 +150,11 @@ function Home({ dataLayer }:{ dataLayer: (dataLayerArgs: DataLayerArgs) => void}
       <Typography
         variant="h1"
         sx={{
-          fontSize: '3em',
+          fontSize: { xs: '1.8em', sm: '3em' },
           color: 'rgba(255,255,255,0.87)',
           textShadow: 'black 0 0 8px',
-          marginBottom: 4,
+          marginBottom: { xs: 2, sm: 4 },
+          textAlign: 'center',
         }}
       >
         Share ranked polls!
@@ -176,7 +169,7 @@ function Home({ dataLayer }:{ dataLayer: (dataLayerArgs: DataLayerArgs) => void}
               fontFamily: 'Merriweather, serif',
               textTransform: 'none',
               textShadow: 'none',
-              fontSize: '0.5em',
+              fontSize: { xs: '0.56em', sm: '0.5em' },
             }}
           >
             Why?
@@ -184,7 +177,7 @@ function Home({ dataLayer }:{ dataLayer: (dataLayerArgs: DataLayerArgs) => void}
         </Link>
       </Typography>
       <Container>
-        <Paper sx={{ padding: 4 }}>
+        <Paper sx={{ padding: { xs: 2, sm: 4 } }}>
           <TextField
             label="Question"
             variant="filled"

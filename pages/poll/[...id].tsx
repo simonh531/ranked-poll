@@ -4,79 +4,16 @@ import React, {
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import {
-  gql, useLazyQuery,
+  gql, useLazyQuery, useReactiveVar,
 } from '@apollo/client';
 import {
   Container, Paper, Box, Skeleton, Typography, Divider,
 } from '@mui/material';
 import { Client } from 'pg';
-import { themeColorVar } from '../../components/layout';
+import { themeColorVar, historyVar } from '../../components/layout';
 import PollVote from '../../components/pollVote';
 import PollResult from '../../components/pollResult';
-
-// const Results = ({ pairs, votes }) => (
-//   <div>
-//     <Section title="Advanced" headerSize="1.4">
-//       <Section title="Votes" headerSize="1.2">
-//         <table>
-//           <thead>
-//             <tr>
-//               <th>Count</th>
-//               <PreferenceHeader>Preferences</PreferenceHeader>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {votes.map((datum) => (
-//               <tr key={datum.vote}>
-//                 <TableNumber>{datum.count}</TableNumber>
-//                 <td>
-//                   {datum.vote.join(' > ')}
-//                   {datum.lowVote.length ? ` >>> ${datum.lowVote.join(' > ')}` : ''}
-//                 </td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       </Section>
-//       <Section title="Pair Results" headerSize="1.2">
-//         <PairTable>
-//           {pairs.map((pairData, index) => {
-//             const order = Object.entries(pairData).sort(
-//               // eslint-disable-next-line no-unused-vars
-//               ([_, score1], [__, score2]) => score2 - score1,
-//             );
-//             return (
-//               // eslint-disable-next-line react/no-array-index-key
-//               <Fragment key={index}>
-//                 <tbody>
-//                   <tr>
-//                     <PairBox winner={order[0][1] > order[1][1]}>{order[0][1]}</PairBox>
-//                     <PairBox winner={order[0][1] > order[1][1]}>{order[0][0]}</PairBox>
-//                   </tr>
-//                   <tr>
-//                     <PairBox>{order[1][1]}</PairBox>
-//                     <PairBox>{order[1][0]}</PairBox>
-//                   </tr>
-//                 </tbody>
-//                 <tbody>
-//                   <PairSpacing />
-//                 </tbody>
-//               </Fragment>
-//             );
-//           })}
-//         </PairTable>
-//       </Section>
-//     </Section>
-//   </div>
-// );
-
-export function toHex(number:number) {
-  const hex = number.toString(16);
-  if (hex.length === 1) {
-    return `0${hex}`;
-  }
-  return hex;
-}
+import { toHex } from '../../style/colorTools';
 
 const POLL = gql`
   query poll($id: ID!) {
@@ -102,38 +39,40 @@ function Poll({
 }) {
   const router = useRouter();
 
-  const [results, setResults] = useState(false);
+  const [windowResults, setWindowResults] = useState(false);
   useEffect(() => {
-    setResults(window.location.search.slice(1, 8) === 'results');
-  }, [router.query]);
-
-  const [id, setId] = useState(() => {
-    if (router.query && router.query.id) {
-      if (Array.isArray(router.query.id)) {
-        return router.query.id[0];
-      }
-      return router.query.id;
-    }
-    return '';
-  });
-  useEffect(() => {
-    if (!id) {
-      const paths = window.location.pathname.split('/');
-      setId(paths[2]);
-    }
+    setWindowResults(window.location.search.slice(1, 8) === 'results');
   }, []);
+  const results = windowResults || (router.query && 'results' in router.query);
+
+  const [windowId, setWindowId] = useState('');
+  useEffect(() => {
+    setWindowId(window.location.pathname.split('/')[2]);
+  }, []);
+
+  let id = windowId;
+  if (router.query && router.query.id) {
+    if (Array.isArray(router.query.id)) {
+      [id] = router.query.id;
+    } else {
+      id = router.query.id;
+    }
+  }
 
   useEffect(() => {
     if (id && title) {
-      router.replace(
-        `/poll/${id}/${
-          title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')
-        }${results ? '?results' : ''}`,
-        undefined,
-        { shallow: true },
-      );
+      const targetPath = `/poll/${id}/${
+        title.replace(/[^\w\d\s]/g, '').replace(/\s/g, '_')
+      }${results ? '?results' : ''}`;
+      if (router.asPath !== targetPath) {
+        router.replace(
+          targetPath,
+          undefined,
+          { shallow: true },
+        );
+      }
     }
-  }, [title]);
+  }, [id, results, router, title]);
 
   const [
     getPollData,
@@ -151,22 +90,28 @@ function Poll({
   useEffect(() => {
     if (id) {
       getPollData();
-      const historyString = localStorage.getItem('history');
-      if (!historyString) {
-        localStorage.setItem('history', JSON.stringify([{ id, title }]));
-      } else {
-        const history = JSON.parse(historyString);
+    }
+  }, [getPollData, id]);
+
+  const history = useReactiveVar(historyVar);
+  useEffect(() => {
+    if (id && title) {
+      try {
+        const newHistory = [...history];
         const index = history.findIndex(({ id: itemId }) => itemId === id);
         if (index !== -1) {
-          history.splice(index, 1);
+          newHistory.splice(index, 1);
         }
-        if (history.unshift({ id, title }) > 10) {
-          history.pop();
-        }
-        localStorage.setItem('history', JSON.stringify(history));
+        newHistory.unshift({ id, title });
+        historyVar(newHistory);
+        window.localStorage.setItem('history', JSON.stringify(newHistory));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
       }
     }
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, title]);
 
   useEffect(() => {
     if (color) {
@@ -216,7 +161,7 @@ function Poll({
       }}
       >
         <Container>
-          <Paper sx={{ padding: 4 }}>
+          <Paper sx={{ padding: { xs: 2, sm: 4 } }}>
             <Typography variant="h1" sx={{ fontSize: '1.6em' }}>
               {title || <Skeleton />}
             </Typography>

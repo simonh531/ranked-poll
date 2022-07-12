@@ -24,7 +24,7 @@ function AboutPage({ pages = ['Intro'], title, text }:{ pages:string[], title: s
       <Typography
         variant="h1"
         sx={{
-          fontSize: '2.8em',
+          fontSize: '2.6em',
           textAlign: 'center',
         }}
       >
