@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+// import { Pool } from 'pg';
 // import crypto from 'crypto';
 // import { pgSettings } from './encrypted';
 
@@ -21,14 +21,15 @@ import { Pool } from 'pg';
 //   decrypted = JSON.parse(temp);
 // }
 
-const pgConfig = {
-  max: parseInt(process.env.PGPOOLCONNECTIONS, 10) - 5,
-  // ssl: decrypted,
-};
+// const pgConfig = {
+//   max: parseInt(process.env.PGPOOLCONNECTIONS, 10) - 5,
+//   // ssl: decrypted,
+// };
 
-const pool = new Pool(pgConfig);
-export default pool;
+// const pool = new Pool(pgConfig);
+// export default pool;
 
+// eslint-disable-next-line import/prefer-default-export
 export const clientSettings = {
   maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
 };
