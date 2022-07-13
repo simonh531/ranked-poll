@@ -31,7 +31,7 @@ import Cursor from 'pg-cursor';
 // const pool = new Pool(pgConfig);
 // export default pool;
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-explicit-any
 export async function query(text:string|Cursor, values?:any[]) {
   const client = new ServerlessClient({
     maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),

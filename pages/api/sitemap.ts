@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createClient } from 'contentful';
+import { Client } from 'pg';
 import Cursor from 'pg-cursor';
-import { query } from '../../utils/postgresUtils';
+// import { query } from '../../utils/postgresUtils';
 
 const write = async (cursor:Cursor, stream:SitemapStream) => {
   cursor.read(100, async (err, rows) => {
@@ -68,12 +69,16 @@ async function sitemap(req:NextApiRequest, res:NextApiResponse) {
 
     const text = 'SELECT id, title, created_at FROM poll ORDER BY created_at';
 
-    const cursor = await query(new Cursor(text));
+    const client = new Client();
+    await client.connect();
+    const cursor = await client.query(new Cursor(text));
 
     await write(cursor, smStream);
 
     // XML sitemap string
+    console.log('before');
     const sitemapOutput = (await streamToPromise(smStream)).toString();
+    console.log('after');
 
     // Change headers
     res.writeHead(200, {
