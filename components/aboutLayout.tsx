@@ -49,7 +49,7 @@ function AboutLayout({ children, pages }:{ children: ReactNode, pages: string[] 
         <Grid item xs={12} sm={9} md={8}>
           <Paper sx={{ padding: 1, paddingTop: 2 }}>
             {children}
-            <Stack sx={{ justifyContent: 'space-between' }} direction="row">
+            <Stack sx={{ justifyContent: 'space-between', flexWrap: 'wrap' }} direction="row">
               <Link href="/" passHref>
                 <Typography
                   component="a"
@@ -60,9 +60,7 @@ function AboutLayout({ children, pages }:{ children: ReactNode, pages: string[] 
                     },
                   }}
                 >
-                  <Typography component="span" sx={{ verticalAlign: 'text-bottom' }} className="material-icons">
-                    arrow_back_ios
-                  </Typography>
+                  {'< '}
                   Home
                 </Typography>
               </Link>
