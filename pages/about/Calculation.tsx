@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import {
-  Typography, TextField, ToggleButton, ToggleButtonGroup, Tabs, Tab,
+  Typography, TextField, ToggleButton, ToggleButtonGroup, Tabs, Tab, useMediaQuery,
   TableContainer, Paper, Table, TableBody, TableRow, TableCell, Stack,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -24,6 +24,7 @@ import AboutLayout from '../../components/aboutLayout';
 import options from '../../style/richTextStyles';
 import { toColor } from '../../style/colorTools';
 import { fromPairsCalc } from '../../utils/rankedPairsCalc';
+import { getAboutPages } from '../../utils/contentfulUtils';
 import { barOptions, donutOptions } from '../../style/chartOptions';
 
 ChartJS.register(
@@ -93,6 +94,8 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
   postPlaygroundText:Document
 }) {
   const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [chartType, setChartType] = useState('bar');
   const [aPairAB, setAPairAB] = useState(0);
   const [bPairAB, setBPairAB] = useState(0);
@@ -171,29 +174,32 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
           />
         </Stack>
         <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }}>
-          <ToggleButtonGroup
-            orientation="vertical"
-            value={chartType}
-            exclusive
-            onChange={(_, type) => setChartType(type)}
-            size="small"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            <ToggleButton value="bar">
-              <span className="material-icons">bar_chart</span>
-            </ToggleButton>
-            <ToggleButton value="donut">
-              <span className="material-icons">donut_large</span>
-            </ToggleButton>
-          </ToggleButtonGroup>
-          <Tabs
-            sx={{ display: { xs: 'block', sm: 'none' } }}
-            value={chartType === 'bar' ? 0 : 1}
-            onChange={(_, value) => setChartType(value === 0 ? 'bar' : 'donut')}
-          >
-            <Tab label="Bar Chart" sx={{ textTransform: 'none' }} />
-            <Tab label="Donut Chart" sx={{ textTransform: 'none' }} />
-          </Tabs>
+          {isXs ? (
+            <Tabs
+              sx={{ display: { xs: 'block', sm: 'none' } }}
+              value={chartType === 'bar' ? 0 : 1}
+              onChange={(_, value) => setChartType(value === 0 ? 'bar' : 'donut')}
+            >
+              <Tab label="Bar Chart" sx={{ textTransform: 'none' }} />
+              <Tab label="Donut Chart" sx={{ textTransform: 'none' }} />
+            </Tabs>
+          ) : (
+            <ToggleButtonGroup
+              orientation="vertical"
+              value={chartType}
+              exclusive
+              onChange={(_, type) => setChartType(type)}
+              size="small"
+              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+            >
+              <ToggleButton value="bar">
+                <span className="material-icons">bar_chart</span>
+              </ToggleButton>
+              <ToggleButton value="donut">
+                <span className="material-icons">donut_large</span>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          )}
           <Paper sx={{ backgroundColor: '#ffffff', padding: 1, flex: 1 }}>
             {chartType === 'bar' ? (
               <Bar
@@ -245,24 +251,17 @@ export const getStaticProps = async () => {
     host: process.env.CONTENTFUL_HOST,
   });
 
-  const [entries, calculationText] = await Promise.all([
-    client.getEntries<{title:string, priority:number}>({
-      content_type: 'aboutPage',
-      select: 'fields.title,fields.priority',
-    }),
+  const [[pages], calculationText] = await Promise.all([
+    getAboutPages(client),
     client.getEntry<{prePlaygroundText:Document, postPlaygroundText:Document}>('5kB9prnTP5VVQGJVXhV0cR', {
       content_type: 'calculationPage',
       select: 'fields.prePlaygroundText,fields.postPlaygroundText',
     }),
   ]);
 
-  const pages = entries.items.sort(
-    (entry1, entry2) => entry1.fields.priority - entry2.fields.priority,
-  ).map(({ fields }) => fields.title);
-
   return {
     props: {
-      pages: [...pages, 'Calculation'],
+      pages,
       prePlaygroundText: calculationText.fields.prePlaygroundText,
       postPlaygroundText: calculationText.fields.postPlaygroundText,
     },

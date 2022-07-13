@@ -7,6 +7,7 @@ import { Document } from '@contentful/rich-text-types';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import AboutLayout from '../../components/aboutLayout';
 import options from '../../style/richTextStyles';
+import { getAboutPages } from '../../utils/contentfulUtils';
 
 function AboutPage({ pages = ['Intro'], title, text }:{ pages:string[], title: string, text: Document}) {
   return (
@@ -66,32 +67,18 @@ export const getStaticProps = async ({ params }) => {
     host: process.env.CONTENTFUL_HOST,
   });
   try {
-    const entries = await client.getEntries<{title:string, priority:number}>({
-      content_type: 'aboutPage',
-      select: 'fields.title,fields.priority',
-    });
-
-    let id;
-    const pages = entries.items.sort(
-      (entry1, entry2) => entry1.fields.priority - entry2.fields.priority,
-    ).map(({ fields, sys }) => {
-      if (fields.title === params.title) {
-        id = sys.id;
-      }
-      return fields.title;
-    });
+    const [pages, id] = await getAboutPages(client, params.title);
 
     const content = await client.getEntry<{content:string}>(id, {
       content_type: 'aboutPage',
       select: 'fields.content',
     });
-
     const text = content.fields.content;
 
     if (text) {
       return {
         props: {
-          pages: [...pages, 'Calculation'],
+          pages,
           title: params.title,
           text,
         },

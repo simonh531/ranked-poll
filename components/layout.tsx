@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { deepmerge } from '@mui/utils';
 import {
   AppBar, Box, Button, Container, CssBaseline,
-  Toolbar, Typography, styled, Stack, Drawer,
+  Toolbar, Typography, styled, Stack, Drawer, Grid,
   List, ListItem, ListItemButton, ListItemText,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
@@ -129,23 +129,34 @@ function Layout({ children }:{children: ReactNode}) {
         </Box>
         <Box sx={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <Container sx={{ fontSize: { xs: '0.9em', sm: '1em' } }} disableGutters>
-            <Stack spacing={1} direction="row" sx={{ alignItems: 'center', justifyContent: 'space-evenly' }}>
-              <Link href="/" passHref>
-                <FooterButton component="a">
-                  Home
-                </FooterButton>
-              </Link>
-              <Link href="/about" passHref>
-                <FooterButton component="a">
-                  About
-                </FooterButton>
-              </Link>
-              <Typography sx={{ color: 'rgba(255,255,255,0.87)', fontSize: '1em' }}>
-                &copy;
-                {` ${new Date(Date.now()).getFullYear()} `}
-                Ranked Poll
-              </Typography>
-            </Stack>
+            <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'space-evenly' }}>
+              <Grid item>
+                <Link href="/" passHref>
+                  <FooterButton component="a">
+                    Home
+                  </FooterButton>
+                </Link>
+              </Grid>
+              <Grid item>
+                <Link href="/about" passHref>
+                  <FooterButton component="a">
+                    About
+                  </FooterButton>
+                </Link>
+              </Grid>
+              <Grid item>
+                <Typography sx={{ color: 'rgba(255,255,255,0.87)', fontSize: '1em' }}>
+                  contact@rankedpoll.com
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography sx={{ color: 'rgba(255,255,255,0.87)', fontSize: '1em' }}>
+                  &copy;
+                  {` ${new Date(Date.now()).getFullYear()} `}
+                  Ranked Poll
+                </Typography>
+              </Grid>
+            </Grid>
           </Container>
         </Box>
       </Box>

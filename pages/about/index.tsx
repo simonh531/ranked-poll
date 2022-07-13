@@ -7,22 +7,8 @@ import { Document } from '@contentful/rich-text-types';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 
 import AboutLayout from '../../components/aboutLayout';
+import { getAboutPages } from '../../utils/contentfulUtils';
 import options from '../../style/richTextStyles';
-
-// const Title = styled.h1`
-//   margin: 0;
-//   font-family: Righteous, cursive;
-//   font-size: 2.8em;
-//   text-align: center;
-//   color: black;
-// `;
-
-// const Text = styled.div`
-//   font-family: Open Sans, sans-serif;
-//   line-height: 1.4;
-//   font-size: 1.2em;
-//   text-align: justify;
-// `;
 
 function AboutHome({ pages = [], text }:{ pages: string[], text: Document }) {
   return (
@@ -68,31 +54,18 @@ export const getStaticProps = async () => {
     host: process.env.CONTENTFUL_HOST,
   });
 
-  const entries = await client.getEntries<{title:string, priority:number}>({
-    content_type: 'aboutPage',
-    select: 'fields.title,fields.priority',
-  });
+  const [pages, id] = await getAboutPages(client, 'Intro');
 
-  let introId;
-  const pages = entries.items.sort(
-    (entry1, entry2) => entry1.fields.priority - entry2.fields.priority,
-  ).map(({ fields, sys }) => {
-    if (fields.title === 'Intro') {
-      introId = sys.id;
-    }
-    return fields.title;
-  });
-
-  const intro = await client.getEntry<{content:string}>(introId, {
+  const intro = await client.getEntry<{content:string}>(id, {
     content_type: 'aboutPage',
     select: 'fields.content',
   });
-
   const text = intro.fields.content;
 
   return {
     props: {
-      pages: [...pages, 'Calculation'], text,
+      pages,
+      text,
     },
   };
 };

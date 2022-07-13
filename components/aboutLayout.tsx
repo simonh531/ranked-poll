@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import {
-  Container, Paper, Grid, Typography, SpeedDial, SpeedDialAction,
+  Container, Paper, Grid, Typography, SpeedDial, SpeedDialAction, Stack,
 } from '@mui/material';
 import { themeColorVar } from './layout';
 import { mainColor } from '../style/colors';
@@ -49,12 +49,35 @@ function AboutLayout({ children, pages }:{ children: ReactNode, pages: string[] 
         <Grid item xs={12} sm={9} md={8}>
           <Paper sx={{ padding: 1, paddingTop: 2 }}>
             {children}
+            <Stack sx={{ justifyContent: 'space-between' }} direction="row">
+              <Link href="/" passHref>
+                <Typography
+                  component="a"
+                  sx={{
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  <Typography component="span" sx={{ verticalAlign: 'text-bottom' }} className="material-icons">
+                    arrow_back_ios
+                  </Typography>
+                  Home
+                </Typography>
+              </Link>
+              <Typography>
+                contact@rankedpoll.com
+              </Typography>
+            </Stack>
           </Paper>
         </Grid>
       </Grid>
       <SpeedDial
         ariaLabel="Table of contents"
-        sx={{ position: 'fixed', right: 16, bottom: 16 }}
+        sx={{
+          position: 'fixed', right: 16, bottom: 16, display: { xs: 'flex', sm: 'none' },
+        }}
         icon={<span className="material-icons">menu</span>}
         FabProps={{ sx: { right: '-28px' } }}
         open={open}
