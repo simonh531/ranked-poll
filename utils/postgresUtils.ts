@@ -22,7 +22,7 @@ import { Pool } from 'pg';
 // }
 
 const pgConfig = {
-  max: parseInt(process.env.PGPOOLCONNECTIONS, 10),
+  max: parseInt(process.env.PGPOOLCONNECTIONS, 10) - 5,
   // ssl: decrypted,
 };
 
@@ -30,3 +30,7 @@ const pgConfig = {
 console.log('Initializing new pg Pool');
 const pool = new Pool(pgConfig);
 export default pool;
+
+export const clientSettings = {
+  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
+};
