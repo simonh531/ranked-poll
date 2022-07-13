@@ -2,8 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createClient } from 'contentful';
 import Cursor from 'pg-cursor';
-import ServerlessClient from 'serverless-postgres';
-import { clientSettings } from '../../utils/postgresUtils';
+import { query } from '../../utils/postgresUtils';
 
 const write = async (cursor:Cursor, stream:SitemapStream) => {
   cursor.read(100, async (err, rows) => {
@@ -68,10 +67,8 @@ async function sitemap(req:NextApiRequest, res:NextApiResponse) {
     });
 
     const text = 'SELECT id, title, created_at FROM poll ORDER BY created_at';
-    const client = new ServerlessClient(clientSettings);
-    await client.connect();
-    const cursor = await client.query(new Cursor(text));
-    await client.clean();
+
+    const cursor = await query(new Cursor(text));
 
     await write(cursor, smStream);
 

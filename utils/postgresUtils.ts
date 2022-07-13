@@ -1,6 +1,8 @@
 // import { Pool } from 'pg';
 // import crypto from 'crypto';
 // import { pgSettings } from './encrypted';
+import ServerlessClient from 'serverless-postgres';
+import Cursor from 'pg-cursor';
 
 // the reason we keep this in a separate file is because it needs to be
 // accessible by multiple APIs
@@ -30,6 +32,18 @@
 // export default pool;
 
 // eslint-disable-next-line import/prefer-default-export
-export const clientSettings = {
-  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
-};
+export async function query(text:string|Cursor, values?:any[]) {
+  const client = new ServerlessClient({
+    maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
+  });
+  await client.connect();
+  let res;
+  if (text instanceof Cursor) {
+    res = await client.query(text);
+  } else {
+    res = await client.query(text, values);
+  }
+  client.end();
+  await client.clean();
+  return res;
+}
