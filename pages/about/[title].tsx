@@ -48,7 +48,7 @@ export const getStaticPaths = async () => ({
 
 export const getStaticProps = async ({ params }) => {
   if (
-    !process.env.CONTENTFUL_SPACE
+    !process.env.CONTENTFUL_SPACE_ID
     || !process.env.CONTENTFUL_ACCESS_TOKEN
     || !process.env.CONTENTFUL_HOST
   ) {
@@ -62,7 +62,7 @@ export const getStaticProps = async ({ params }) => {
   }
 
   const client = createClient({
-    space: process.env.CONTENTFUL_SPACE,
+    space: process.env.CONTENTFUL_SPACE_ID,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
     host: process.env.CONTENTFUL_HOST,
   });

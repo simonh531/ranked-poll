@@ -234,7 +234,7 @@ function Calculation({ pages, prePlaygroundText, postPlaygroundText }:{
 
 export const getStaticProps = async () => {
   if (
-    !process.env.CONTENTFUL_SPACE
+    !process.env.CONTENTFUL_SPACE_ID
     || !process.env.CONTENTFUL_ACCESS_TOKEN
     || !process.env.CONTENTFUL_HOST
   ) {
@@ -246,7 +246,7 @@ export const getStaticProps = async () => {
   }
 
   const client = createClient({
-    space: process.env.CONTENTFUL_SPACE,
+    space: process.env.CONTENTFUL_SPACE_ID,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
     host: process.env.CONTENTFUL_HOST,
   });
