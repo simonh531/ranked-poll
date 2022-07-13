@@ -76,9 +76,7 @@ async function sitemap(req:NextApiRequest, res:NextApiResponse) {
     await write(cursor, smStream);
 
     // XML sitemap string
-    console.log('before');
     const sitemapOutput = (await streamToPromise(smStream)).toString();
-    console.log('after');
 
     // Change headers
     res.writeHead(200, {
