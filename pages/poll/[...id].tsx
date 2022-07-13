@@ -9,11 +9,12 @@ import {
 import {
   Container, Paper, Box, Skeleton, Typography, Divider,
 } from '@mui/material';
-import { Client } from 'pg';
+
 import { themeColorVar, historyVar } from '../../components/layout';
 import PollVote from '../../components/pollVote';
 import PollResult from '../../components/pollResult';
 import { toHex } from '../../style/colorTools';
+import pool from '../../utils/postgresPool';
 
 const POLL = gql`
   query poll($id: ID!) {
@@ -202,14 +203,12 @@ export const getStaticPaths = async () => ({
 });
 
 export const getStaticProps = async ({ params }) => {
-  const client = new Client();
-  await client.connect();
   const text = 'SELECT title, options, randomize, color FROM poll WHERE id = $1';
   // title shouldn't change because changing question can be misleading after the fact
   // options shouldn't change because late options can be forced to have a disadvantage
   const values = [params.id[0]];
   try {
-    const res = await client.query(text, values);
+    const res = await pool.query(text, values);
     if (res.rows.length) {
       const {
         title, options, randomize, color,
