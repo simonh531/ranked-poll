@@ -5,14 +5,14 @@ import shortid from 'shortid';
 import typeDefs from '../../apollo/type-defs';
 import resolvers from '../../apollo/resolvers';
 import PostgresDB from '../../datasource/postgres';
-import Pool from '../../postgresPool';
-
-const postgres = new PostgresDB({ pool: Pool });
+import Pool from '../../utils/postgresPool';
 
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  dataSources: () => ({ postgres }),
+  dataSources: () => ({
+    postgres: new PostgresDB(Pool),
+  }),
   context: ({ req, res }) => {
     const cookies = new Cookies(req, res);
     let cookieId = cookies.get('id');
@@ -33,4 +33,13 @@ export const config = {
   },
 };
 
-export default apolloServer.createHandler({ path: '/api/graphql' });
+let serverStarted = false;
+async function handler(req, res) {
+  if (!serverStarted) {
+    await apolloServer.start();
+    serverStarted = true;
+  }
+  return apolloServer.createHandler({ path: '/api/graphql' })(req, res);
+}
+
+export default handler;

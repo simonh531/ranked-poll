@@ -70,7 +70,7 @@ Under the Content tab you can create pages that will show up in the about sectio
 
 The backend uses [pg](https://www.npmjs.com/package/pg) to query your Postgres database so you'll need to create .env.development with variables outlined in their [documentation](https://node-postgres.com/features/connecting).
 
-If you set up Contentful, you'll also need to set CONTENTFUL_HOST which will be either preview.contentful.com or cdn.contentful.com, CONTENTFUL_SPACE, and CONTENTFUL_ACCESS_TOKEN according to your API keys in settings.
+If you set up Contentful, you'll also need to set CONTENTFUL_HOST which will be either preview.contentful.com or cdn.contentful.com, CONTENTFUL_SPACE_ID, and CONTENTFUL_ACCESS_TOKEN according to your API keys in settings.
 
 Finally, run with: 
 ```bash
