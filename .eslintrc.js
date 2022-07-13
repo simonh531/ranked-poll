@@ -38,6 +38,7 @@ module.exports = {
     'react/require-default-props': 'off',
     'jsx-a11y/anchor-is-valid': 'off',
     'func-names': 'off',
+    'linebreak-style': 'off',
   },
   settings: {
     'import/resolver': {

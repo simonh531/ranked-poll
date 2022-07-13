@@ -9,12 +9,13 @@ import {
 import {
   Container, Paper, Box, Skeleton, Typography, Divider,
 } from '@mui/material';
+import ServerlessClient from 'serverless-postgres';
 
 import { themeColorVar, historyVar } from '../../components/layout';
 import PollVote from '../../components/pollVote';
 import PollResult from '../../components/pollResult';
 import { toHex } from '../../style/colorTools';
-import pool from '../../utils/postgresPool';
+import { clientSettings } from '../../utils/postgresUtils';
 
 const POLL = gql`
   query poll($id: ID!) {
@@ -208,7 +209,10 @@ export const getStaticProps = async ({ params }) => {
   // options shouldn't change because late options can be forced to have a disadvantage
   const values = [params.id[0]];
   try {
-    const res = await pool.query(text, values);
+    const client = new ServerlessClient(clientSettings);
+    await client.connect();
+    const res = await client.query(text, values);
+    await client.clean();
     if (res.rows.length) {
       const {
         title, options, randomize, color,
