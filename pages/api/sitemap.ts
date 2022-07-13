@@ -70,7 +70,7 @@ async function sitemap(req:NextApiRequest, res:NextApiResponse) {
     const text = 'SELECT id, title, created_at FROM poll ORDER BY created_at';
     const client = new ServerlessClient(clientSettings);
     await client.connect();
-    const cursor = client.query(new Cursor(text));
+    const cursor = await client.query(new Cursor(text));
     await client.clean();
 
     await write(cursor, smStream);

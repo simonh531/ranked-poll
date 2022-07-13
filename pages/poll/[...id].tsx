@@ -232,6 +232,7 @@ export const getStaticProps = async ({ params }) => {
       },
     };
   } catch (err) {
+    console.error(err);
     return null;
   }
 };

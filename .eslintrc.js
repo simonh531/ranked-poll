@@ -39,6 +39,7 @@ module.exports = {
     'jsx-a11y/anchor-is-valid': 'off',
     'func-names': 'off',
     'linebreak-style': 'off',
+    'no-console': 'off',
   },
   settings: {
     'import/resolver': {

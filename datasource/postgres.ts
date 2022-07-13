@@ -1,9 +1,12 @@
+/* eslint-disable class-methods-use-this */
 import { DataSource } from 'apollo-datasource';
-import { Pool } from 'pg';
 // import crypto from 'crypto';
 import shortid from 'shortid';
 import { v4 as uuidv4 } from 'uuid';
+import ServerlessClient from 'serverless-postgres';
 import { mainColor } from '../style/colors';
+
+import { clientSettings } from '../utils/postgresUtils';
 // import { pgSettings } from './encrypted';
 
 // let decrypted;
@@ -29,13 +32,6 @@ import { mainColor } from '../style/colors';
 // export default new Pool(pgConfig);
 
 export default class PostgresDB extends DataSource {
-  pool: Pool;
-
-  constructor(pool: Pool) {
-    super();
-    this.pool = pool;
-  }
-
   async createPoll(
     owner = null,
     title = 'Default Title',
@@ -50,7 +46,10 @@ export default class PostgresDB extends DataSource {
       const text = 'INSERT INTO poll(id, owner_id, title, description, options, color, randomize, protection) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
       const values = [id, owner, title, description, options, color, randomize, protection];
       try {
-        const res = await this.pool.query(text, values);
+        const client = new ServerlessClient(clientSettings);
+        await client.connect();
+        const res = await client.query(text, values);
+        await client.clean();
         return res.rows[0];
       } catch (err) {
         console.error(err.stack);
@@ -65,7 +64,10 @@ export default class PostgresDB extends DataSource {
       const text = 'SELECT poll.*, poll.created_at AS "createdAt", COUNT(DISTINCT vote.id), COUNT(DISTINCT cookie_id) "cookieCount", COUNT(DISTINCT ip) "ipCount", COUNT(DISTINCT user_id) "userCount" FROM poll LEFT JOIN vote ON poll.id = poll_id  WHERE poll.id = $1 GROUP BY poll.id';
       const values = [id];
       try {
-        const res = await this.pool.query(text, values);
+        const client = new ServerlessClient(clientSettings);
+        await client.connect();
+        const res = await client.query(text, values);
+        await client.clean();
         return res.rows[0];
       } catch (err) {
         return null;
@@ -87,7 +89,10 @@ export default class PostgresDB extends DataSource {
       const text = 'INSERT INTO vote(id, user_id, cookie_id, ip, vote, low_vote, poll_id) VALUES($1, $2, $3, $4, $5, $6, $7)';
       const values = [uuid, user, cookie, ip, vote, lowVote, pollId];
       try {
-        await this.pool.query(text, values);
+        const client = new ServerlessClient(clientSettings);
+        await client.connect();
+        await client.query(text, values);
+        await client.clean();
         return true;
       } catch (err) {
         return null;
@@ -109,7 +114,10 @@ export default class PostgresDB extends DataSource {
         text = `SELECT *, COUNT(*) FROM (SELECT distinct on (${protection}) vote, low_vote AS "lowVote" FROM vote WHERE poll_id = $1 ORDER BY ${protection}, created_at DESC) sub GROUP BY vote, "lowVote"`;
       }
       try {
-        const res = await this.pool.query(text, values);
+        const client = new ServerlessClient(clientSettings);
+        await client.connect();
+        const res = await client.query(text, values);
+        await client.clean();
         return res.rows;
       } catch (err) {
         return null;

@@ -5,13 +5,13 @@ import shortid from 'shortid';
 import typeDefs from '../../apollo/type-defs';
 import resolvers from '../../apollo/resolvers';
 import PostgresDB from '../../datasource/postgres';
-import Pool from '../../utils/postgresUtils';
+// import Pool from '../../utils/postgresUtils';
 
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   dataSources: () => ({
-    postgres: new PostgresDB(Pool),
+    postgres: new PostgresDB(),
   }),
   context: ({ req, res }) => {
     const cookies = new Cookies(req, res);

@@ -30,5 +30,5 @@ const pool = new Pool(pgConfig);
 export default pool;
 
 export const clientSettings = {
-  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10) - 5,
+  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
 };
