@@ -26,11 +26,9 @@ const pgConfig = {
   // ssl: decrypted,
 };
 
-// eslint-disable-next-line no-console
-console.log('Initializing new pg Pool');
 const pool = new Pool(pgConfig);
 export default pool;
 
 export const clientSettings = {
-  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10),
+  maxConnections: parseInt(process.env.PGPOOLCONNECTIONS, 10) - 5,
 };
