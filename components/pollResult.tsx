@@ -201,6 +201,7 @@ function PollResult({
               }],
             }}
             options={barOptions}
+            height={isXs ? options.length * 20 : null}
           />
         );
         break;
@@ -247,7 +248,6 @@ function PollResult({
           <Tab label="Grid" sx={{ textTransform: 'none' }} />
           <Tab label="Detailed" sx={{ textTransform: 'none' }} />
         </Tabs>
-        {tables}
         {tab === 0 ? (
           <>
             <Tabs
@@ -264,6 +264,7 @@ function PollResult({
             </Box>
           </>
         ) : null}
+        {tables}
       </>
     );
   } else {
