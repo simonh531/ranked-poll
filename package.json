@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"supabase start\" \"next dev\"",
     "build": "next build",
     "vercel-build": "npx supabase db push && next build",
     "start": "next start",
@@ -26,6 +26,7 @@
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.2.1",
     "eslint": "^9.20.0",
     "eslint-config-next": "^16.1.6",
     "eslint-plugin-perfectionist": "^5.6.0",
