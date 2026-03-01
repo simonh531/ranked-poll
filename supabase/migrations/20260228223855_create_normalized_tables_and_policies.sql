@@ -1,11 +1,12 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Create the 'polls' table
 CREATE TABLE polls (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     question text NOT NULL,
-    user_id uuid NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    settings jsonb DEFAULT '{"is_anonymous": true, "allow_multiple": false}'::jsonb
 );
 
 -- Enable RLS for 'polls' table
@@ -30,15 +31,16 @@ CREATE POLICY "Allow owners to delete their own polls" ON polls
 
 -- Create the 'poll_options' table
 CREATE TABLE poll_options (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    poll_id uuid NOT NULL,
-    description text NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    poll_id uuid NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    label text NOT NULL,
+    original_label text NOT NULL, 
+    position integer NOT NULL,     
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+    edited_at timestamp with time zone,
 );
 
--- Enable RLS for 'poll_options' table
 ALTER TABLE poll_options ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access
@@ -47,38 +49,28 @@ CREATE POLICY "Allow public read access to poll_options" ON poll_options
 
 -- Allow users who own the parent poll to insert options
 CREATE POLICY "Allow poll owners to insert options" ON poll_options
-    FOR INSERT WITH CHECK (
-        (SELECT user_id FROM polls WHERE id = poll_id) = auth.uid()
-    );
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Allow users who own the parent poll to update options
 CREATE POLICY "Allow poll owners to update options" ON poll_options
-    FOR UPDATE USING (
-        (SELECT user_id FROM polls WHERE id = poll_id) = auth.uid()
-    ) WITH CHECK (
-        (SELECT user_id FROM polls WHERE id = poll_id) = auth.uid()
-    );
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
--- Allow users who own the parent poll to delete options
 CREATE POLICY "Allow poll owners to delete options" ON poll_options
-    FOR DELETE USING (
-        (SELECT user_id FROM polls WHERE id = poll_id) = auth.uid()
-    );
+    FOR DELETE USING (auth.uid() = user_id);
 
 
 -- Create the 'votes' table
 CREATE TABLE votes (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    poll_id uuid NOT NULL,
-    option_id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    rank integer NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE,
-    FOREIGN KEY (option_id) REFERENCES poll_options(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+    poll_id uuid NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    option_id uuid NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    rank integer NOT NULL DEFAULT 1,
+    
+    -- Constraint: A user cannot rank the same option twice in one poll
     UNIQUE (poll_id, user_id, option_id),
+    -- Constraint: A user cannot give two different options the same rank
     UNIQUE (poll_id, user_id, rank)
 );
 
@@ -100,3 +92,56 @@ CREATE POLICY "Allow users to update their own votes" ON votes
 -- Allow users to delete their own votes
 CREATE POLICY "Allow users to delete their own votes" ON votes
     FOR DELETE USING (auth.uid() = user_id);
+
+-- 1. Create the function that handles the logic
+CREATE OR REPLACE FUNCTION handle_poll_option_update()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- LOCK original_label: If they try to change it, set it back to what it was
+    NEW.original_label := OLD.original_label;
+
+    -- SET edited_at: Only if the label actually changed
+    IF NEW.label IS DISTINCT FROM OLD.label THEN
+        NEW.edited_at := now();
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Bind the function to the poll_options table
+CREATE TRIGGER tr_on_poll_option_update
+BEFORE UPDATE ON poll_options
+FOR EACH ROW
+EXECUTE FUNCTION handle_poll_option_update();
+
+-- Automatically sync original_label on insert and track edits
+CREATE OR REPLACE FUNCTION handle_option_integrity()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        NEW.original_label := NEW.label;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        NEW.original_label := OLD.original_label; -- Lock it
+        IF NEW.label IS DISTINCT FROM OLD.label THEN
+            NEW.edited_at := now();
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_option_integrity
+BEFORE INSERT OR UPDATE ON poll_options
+FOR EACH ROW EXECUTE FUNCTION handle_option_integrity();
+
+PUBLIC RESULTS VIEW (SECURITY DEFINER)
+-- This allows anyone to see the aggregated totals without seeing individual user_ids.
+CREATE OR REPLACE VIEW public_poll_results AS
+SELECT 
+    poll_id,
+    option_id,
+    count(*) as total_votes,
+    avg(rank) as avg_rank
+FROM votes
+GROUP BY poll_id, option_id;
