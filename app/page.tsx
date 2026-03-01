@@ -1,29 +1,50 @@
+import Form from "next/form";
+
+import { H1 } from "@/components/typography";
+import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+
+import OptionInputs from "./OptionInputs";
 
 export default function Page() {
   return (
-    <div className="bg-blue-400 grow relative flex items-center justify-center">
-      <Card className="w-full max-w-250">
+    <Form action="/" className="pt-8 relative flex justify-center">
+      <Card className="w-full max-w-200">
         <CardHeader>
-          <CardTitle>Card Title</CardTitle>
-          <CardDescription>Card Description</CardDescription>
-          <CardAction>Card Action</CardAction>
+          <CardTitle>
+            <H1>Create a Ranked Poll</H1>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Card Content</p>
+          <FieldSet>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Question</FieldLabel>
+                <Input
+                  name="question"
+                  placeholder="What would you like to poll?"
+                  required
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Options</FieldLabel>
+                <OptionInputs />
+              </Field>
+            </FieldGroup>
+          </FieldSet>
         </CardContent>
         <CardFooter>
-          <p>Card Footer</p>
+          <Button type="submit">Create</Button>
         </CardFooter>
       </Card>
-    </div>
+    </Form>
   );
 }

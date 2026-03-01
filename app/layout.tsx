@@ -1,63 +1,64 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Righteous } from "next/font/google";
+
+import { Inter, Merriweather, Open_Sans } from "next/font/google";
+import Link from "next/link";
+
 import "./globals.css";
+import { ReactNode } from "react";
+
+import Logo from "@/components/Logo";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   NavigationMenu,
-  NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuLink,
+  NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
-import Logo from "@/components/Logo";
+
+import AvatarFallbackIcon from "./AvatarFallbackIcon";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const merriweather = Merriweather({
   subsets: ["latin"],
+  variable: "--font-merriweather",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const openSans = Open_Sans({
   subsets: ["latin"],
-});
-
-const righteous = Righteous({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-righteous",
+  variable: "--font-open-sans",
 });
 
 const description =
   "Instantly create and share ranked vote polls! Learn about ranked voting and its uses. Free and no sign up needed! Open Source!";
 
 export const metadata: Metadata = {
-  title: "Ranked Poll",
   description,
+  title: "Ranked Poll",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html className={inter.variable} lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${merriweather.variable} ${openSans.variable} antialiased min-h-screen flex flex-col bg-blue-400`}
       >
-        <nav className="h-10 flex justify-center items-center">
+        <nav className="h-10 flex justify-center items-center bg-white">
           <div className="max-w-250 w-full flex items-center">
-            <Logo className="text-2xl mr-4" />
+            <Link href="/">
+              <Logo className="text-2xl mr-4" />
+            </Link>
             <div className="grow">
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuLink
                       render={
-                        <Link href="/about" className="text-lg">
+                        <Link className="text-xl" href="/about">
                           About
                         </Link>
                       }
@@ -69,7 +70,7 @@ export default function RootLayout({
             <Link href="/login">
               <Avatar className="hover:bg-muted">
                 <AvatarFallback className="bg-transparent">
-                  <User />
+                  <AvatarFallbackIcon />
                 </AvatarFallback>
               </Avatar>
             </Link>

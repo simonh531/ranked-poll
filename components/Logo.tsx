@@ -1,9 +1,9 @@
 import { Righteous } from "next/font/google";
 
 const righteous = Righteous({
-  weight: "400",
   subsets: ["latin"],
   variable: "--font-righteous",
+  weight: "400",
 });
 
 export default function Logo({
