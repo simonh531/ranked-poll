@@ -87,18 +87,17 @@ CREATE TRIGGER tr_option_integrity
 BEFORE INSERT OR UPDATE ON poll_options
 FOR EACH ROW EXECUTE FUNCTION handle_option_integrity();
 
--- Save for later maybe?
--- -- 6. PUBLIC AGGREGATE VIEW
--- -- SECURITY DEFINER bypasses RLS so anyone can see the *count*, 
--- -- but they can't see *who* voted.
--- CREATE OR REPLACE VIEW public_poll_results AS
--- SELECT 
---     poll_id,
---     option_id,
---     count(*) as total_votes,
---     avg(rank) as avg_rank
--- FROM votes
--- GROUP BY poll_id, option_id;
+-- 6. PUBLIC AGGREGATE VIEW
+-- SECURITY DEFINER bypasses RLS so anyone can see the *count*, 
+-- but they can't see *who* voted.
+CREATE OR REPLACE VIEW public_poll_results AS
+SELECT 
+    poll_id,
+    option_id,
+    count(*) as total_votes,
+    avg(rank) as avg_rank
+FROM votes
+GROUP BY poll_id, option_id;
 
 -- Ensure the 'anon' and 'authenticated' roles can read the view
 GRANT SELECT ON public_poll_results TO anon, authenticated;
