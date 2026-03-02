@@ -4,6 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 2. TABLES
 CREATE TABLE polls (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    slug text UNIQUE DEFAULT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     question text NOT NULL,
     user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -34,6 +35,7 @@ CREATE TABLE votes (
 
 -- 3. INDEXING (Performance)
 CREATE INDEX idx_polls_user ON polls(user_id);
+CREATE INDEX idx_polls_slug ON polls(slug);
 CREATE INDEX idx_options_poll ON poll_options(poll_id);
 CREATE INDEX idx_votes_poll ON votes(poll_id);
 CREATE INDEX idx_votes_user ON votes(user_id);

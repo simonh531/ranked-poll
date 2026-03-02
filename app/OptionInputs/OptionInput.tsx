@@ -15,12 +15,14 @@ export default function OptionInput({
   onDelete,
   onMoveDown,
   onMoveUp,
+  required,
   value,
 }: {
   onChange: ChangeEventHandler<HTMLInputElement, HTMLInputElement>;
   onDelete?: () => void;
   onMoveDown?: () => void;
   onMoveUp?: () => void;
+  required: boolean;
   value: string;
 }) {
   return (
@@ -28,9 +30,10 @@ export default function OptionInput({
       <Square className="text-gray-700" />
       <InputGroup>
         <InputGroupInput
-          name="choice"
+          name="option"
           onChange={onChange}
           placeholder="Option"
+          required={required}
           value={value}
         />
         <InputGroupAddon align="inline-end">

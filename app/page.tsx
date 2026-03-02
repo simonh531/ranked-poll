@@ -1,7 +1,4 @@
-import Form from "next/form";
-
 import { H1 } from "@/components/typography";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,11 +9,14 @@ import {
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
+import CreateButton from "./CreateButton";
+import CreatePollForm from "./CreatePollForm";
 import OptionInputs from "./OptionInputs";
+import Validation from "./Validation";
 
 export default function Page() {
   return (
-    <Form action="/" className="pt-8 relative flex justify-center">
+    <CreatePollForm>
       <Card className="w-full max-w-200">
         <CardHeader>
           <CardTitle>
@@ -40,11 +40,12 @@ export default function Page() {
               </Field>
             </FieldGroup>
           </FieldSet>
+          <Validation />
         </CardContent>
         <CardFooter>
-          <Button type="submit">Create</Button>
+          <CreateButton />
         </CardFooter>
       </Card>
-    </Form>
+    </CreatePollForm>
   );
 }

@@ -13,6 +13,7 @@ export default function OptionInputs() {
       [2, ""],
     ]),
   );
+  const validCount = options.count((option) => option.trim() !== "");
   return options.toArray().map(([key, value], index) => (
     <OptionInput
       key={key}
@@ -46,6 +47,7 @@ export default function OptionInputs() {
               )
           : undefined
       }
+      required={validCount < 2}
       value={value}
     />
   ));
