@@ -43,7 +43,17 @@ export default async function createPollAction(
   } = await supabase.auth.getUser();
   if (user) {
     const slug = nanoid(6);
-    console.log(slug, user.id, question, cleanedOptions);
+    const { error } = await supabase.rpc("create_poll_with_options", {
+      options: cleanedOptions,
+      question,
+      slug,
+      user_id: user.id,
+    });
+
+    if (error) {
+      console.error(error);
+      return { error: "Failed to create poll" };
+    }
 
     redirect(`/polls/${slug}`);
   }

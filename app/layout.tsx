@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import AvatarFallbackIcon from "./AvatarFallbackIcon";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const merriweather = Merriweather({
   subsets: ["latin"],
@@ -43,7 +44,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html className={inter.variable} lang="en">
+    <html className={cn("font-sans", inter.variable)} lang="en">
       <body
         className={`${merriweather.variable} ${openSans.variable} antialiased min-h-screen flex flex-col bg-blue-400`}
       >

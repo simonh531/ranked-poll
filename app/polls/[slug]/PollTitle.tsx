@@ -2,20 +2,18 @@ import { Suspense } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 
-import Framework from "./Framework";
-
-export default function Page({
+export default function PollTitle({
   params,
   searchParams,
 }: PageProps<"/polls/[slug]">) {
   return (
-    <Suspense fallback={<Framework title="Loading..." options={[]} />}>
-      <PageWithData params={params} searchParams={searchParams} />
+    <Suspense>
+      <PollTitleWithData params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function PageWithData({ params }: PageProps<"/polls/[slug]">) {
+async function PollTitleWithData({ params }: PageProps<"/polls/[slug]">) {
   const { slug } = await params;
   const supabase = await createClient();
   const { data: poll } = await supabase
@@ -26,5 +24,5 @@ async function PageWithData({ params }: PageProps<"/polls/[slug]">) {
   if (!poll) {
     return "Poll Not Found";
   }
-  return <Framework title={poll.question} options={["hi", "bye"]} />;
+  return poll?.question;
 }
