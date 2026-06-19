@@ -172,15 +172,26 @@ export type Database = {
       }
     }
     Functions: {
-      create_poll_with_options: {
-        Args: {
-          options: string[]
-          question: string
-          slug: string
-          user_id: string
-        }
-        Returns: undefined
-      }
+      create_poll_with_options:
+        | {
+            Args: {
+              options: string[]
+              question: string
+              slug: string
+              user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              options: string[]
+              question: string
+              settings?: Json
+              slug: string
+              user_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       [_ in never]: never

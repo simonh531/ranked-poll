@@ -20,6 +20,9 @@ export default async function createPollAction(
     return { error: "Question is required" };
   }
 
+  const description = formData.get("description");
+  const randomize = formData.get("randomize") === "true";
+
   const options = formData.getAll("option");
   const cleanedOptions: string[] = [];
   options.forEach((option) => {
@@ -43,11 +46,17 @@ export default async function createPollAction(
   } = await supabase.auth.getUser();
   if (user) {
     const slug = nanoid(6);
+    const settings = {
+      description: typeof description === "string" ? description.trim() : "",
+      randomize,
+    };
+
     const { error } = await supabase.rpc("create_poll_with_options", {
       options: cleanedOptions,
       question,
       slug,
       user_id: user.id,
+      settings,
     });
 
     if (error) {
@@ -59,3 +68,4 @@ export default async function createPollAction(
   }
   return { error: "" };
 }
+

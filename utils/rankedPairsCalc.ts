@@ -5,7 +5,7 @@ interface UniqueVote { // count represents number of people that voted this way
 }
 
 export interface PairMapping {
-  [key:string]: [number, number] // first number is first option in key, second is second
+  [key: string]: [number, number] // first number is first option in key, second is second
 }
 
 interface PairElement {
@@ -24,7 +24,7 @@ export interface Nodes {
   }
 }
 
-const isSourceAfterRemove = (aboveNodes:string[], prevRankings:string[]) => {
+const isSourceAfterRemove = (aboveNodes: string[], prevRankings: string[]) => {
   let isSource = true;
   let i = 0;
   while (isSource && i < aboveNodes.length) {
@@ -36,7 +36,7 @@ const isSourceAfterRemove = (aboveNodes:string[], prevRankings:string[]) => {
   return isSource;
 };
 
-const getAllAbove = (name:string, nodes:Nodes, aboveArray:string[]) => {
+const getAllAbove = (name: string, nodes: Nodes, aboveArray: string[]) => {
   if (!aboveArray.includes(name)) {
     aboveArray.push(name);
   }
@@ -44,7 +44,7 @@ const getAllAbove = (name:string, nodes:Nodes, aboveArray:string[]) => {
   return aboveArray;
 };
 
-const getAllBelow = (name:string, nodes:Nodes, belowArray:string[]) => {
+const getAllBelow = (name: string, nodes: Nodes, belowArray: string[]) => {
   if (!belowArray.includes(name)) {
     belowArray.push(name);
   }
@@ -52,7 +52,7 @@ const getAllBelow = (name:string, nodes:Nodes, belowArray:string[]) => {
   return belowArray;
 };
 
-const addNodeToTree = (winner:string, loser:string, nodes:Nodes) => {
+const addNodeToTree = (winner: string, loser: string, nodes: Nodes) => {
   const allAbove = getAllAbove(winner, nodes, []);
   const allBelow = getAllBelow(loser, nodes, []);
   let noLoop = true;
@@ -74,10 +74,10 @@ const addNodeToTree = (winner:string, loser:string, nodes:Nodes) => {
 };
 
 export const makePairs = (
-  pollResult:UniqueVote[],
-  options:string[],
+  pollResult: UniqueVote[],
+  options: string[],
 ) => {
-  const pairs:PairMapping = {};
+  const pairs: PairMapping = {};
 
   options.forEach((option, index) => {
     for (let i = index + 1; i < options.length; i += 1) {
@@ -85,7 +85,7 @@ export const makePairs = (
     }
   });
 
-  function tally(higher:string, lower:string, count:number) {
+  function tally(higher: string, lower: string, count: number) {
     const alphabeticalOrder = [higher, lower].sort();
     const key = JSON.stringify(alphabeticalOrder);
     let higherIndex = 0;
@@ -142,8 +142,8 @@ export const makePairs = (
   return pairs;
 };
 
-const calcStrength = (vote1:number, vote2:number) => Math.abs(vote1 - vote2) / (vote1 + vote2 + 1);
-const calcFallback = (vote1:number, vote2:number) => vote1 + vote2;
+const calcStrength = (vote1: number, vote2: number) => Math.abs(vote1 - vote2) / (vote1 + vote2 + 1);
+const calcFallback = (vote1: number, vote2: number) => vote1 + vote2;
 
 // rank based on strength of victory
 // calculated by number of votes / (total votes + 1)
@@ -153,7 +153,7 @@ const calcFallback = (vote1:number, vote2:number) => vote1 + vote2;
 // votes total wins
 // Ties start at 0 and should trend towards 0.5 at limit infinity
 // Wins start at 0.5 and should trend towards 1 at limit infinity
-export const rankPairs = (pairs:PairMapping):Pair[] => Object.entries(pairs).sort(
+export const rankPairs = (pairs: PairMapping): Pair[] => Object.entries(pairs).sort(
   ([, pair1], [, pair2]) => {
     const proportion1 = calcStrength(pair1[0], pair1[1]);
     const proportion2 = calcStrength(pair2[0], pair2[1]);
@@ -163,7 +163,7 @@ export const rankPairs = (pairs:PairMapping):Pair[] => Object.entries(pairs).sor
     return calcFallback(pair2[0], pair2[1]) - calcFallback(pair1[0], pair1[1]);
   },
 ).map(([keys, votes]) => {
-  const pairNames:[string, string] = JSON.parse(keys);
+  const pairNames: [string, string] = JSON.parse(keys);
   const option1 = {
     name: pairNames[0],
     votes: votes[0],
@@ -188,8 +188,8 @@ export const rankPairs = (pairs:PairMapping):Pair[] => Object.entries(pairs).sor
   };
 });
 
-function deepCopyNodes(nodes:Nodes) {
-  const nodesCopy = {};
+function deepCopyNodes(nodes: Nodes) {
+  const nodesCopy: Nodes = {};
   Object.entries(nodes).sort().forEach(([key, values]) => {
     nodesCopy[key] = {
       above: [...values.above],
@@ -199,9 +199,9 @@ function deepCopyNodes(nodes:Nodes) {
   return nodesCopy;
 }
 
-export const makeNodes = (rankedPairs:Pair[], options:string[]) => {
-  const history:Nodes[] = [];
-  let nodes:Nodes = {};
+export const makeNodes = (rankedPairs: Pair[], options: string[]) => {
+  const history: Nodes[] = [];
+  let nodes: Nodes = {};
   options.forEach((option) => {
     nodes[option] = {
       above: [],
@@ -209,7 +209,7 @@ export const makeNodes = (rankedPairs:Pair[], options:string[]) => {
     };
   });
 
-  let tieResolver:Nodes|null = null;
+  let tieResolver: Nodes | null = null;
   let tieResolverFailed = false;
 
   rankedPairs.forEach((pair, index) => {
@@ -257,9 +257,9 @@ export const makeNodes = (rankedPairs:Pair[], options:string[]) => {
   return { nodes, history };
 };
 
-export const makeRanks = (nodes:Nodes, pairs:PairMapping, options:string[]) => {
-  const rankings:string[][] = [[]];
-  const ratios:number[] = [];
+export const makeRanks = (nodes: Nodes, pairs: PairMapping, options: string[]) => {
+  const rankings: string[][] = [[]];
+  const ratios: number[] = [];
   let unranked = options.filter((option) => {
     if (!nodes[option].above.length) {
       // nothing above it therefore is a source
@@ -316,7 +316,7 @@ export const makeRanks = (nodes:Nodes, pairs:PairMapping, options:string[]) => {
   };
 };
 
-export function fromPairsCalc(pairs:PairMapping = {}, options:string[] = []) {
+export function fromPairsCalc(pairs: PairMapping = {}, options: string[] = []) {
   const rankedPairs = rankPairs(pairs);
   const { nodes, history } = makeNodes(rankedPairs, options);
   const { rankings, ratioPercents } = makeRanks(nodes, pairs, options);
@@ -330,7 +330,7 @@ export function fromPairsCalc(pairs:PairMapping = {}, options:string[] = []) {
   };
 }
 
-export default function rankedPairsCalc(pollResult:UniqueVote[] = [], options:string[] = []) {
+export default function rankedPairsCalc(pollResult: UniqueVote[] = [], options: string[] = []) {
   const pairs = makePairs(pollResult, options);
   return fromPairsCalc(pairs, options);
 }

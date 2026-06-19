@@ -16,7 +16,7 @@ export default function CreatePollForm({ children }: { children: ReactNode }) {
   });
   return (
     <formStateContext.Provider value={{ error: state.error, pending }}>
-      <Form action={formAction} className="pt-8 relative flex justify-center">
+      <Form action={formAction} className="relative w-full flex justify-center">
         {children}
       </Form>
     </formStateContext.Provider>
