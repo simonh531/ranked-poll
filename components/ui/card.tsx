@@ -17,7 +17,9 @@ function Card({
       )}
       {...props}
     >
-      <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 pointer-events-none opacity-90" />
+      <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-primary to-secondary pointer-events-none opacity-90" />
+
+
       {props.children}
     </div>
   )

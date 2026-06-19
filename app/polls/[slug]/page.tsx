@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import VoteDisplay from "./VoteDisplay";
 import ResultsDisplay from "./ResultsDisplay";
 import PollHistoryTracker from "@/components/PollHistoryTracker";
+import ThemeUpdater from "./ThemeUpdater";
+
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -114,12 +116,15 @@ async function PageWithData({ params, searchParams }: PageProps) {
 
   const description = (poll.settings as any)?.description || "";
   const randomize = (poll.settings as any)?.randomize || false;
+  const theme = (poll.settings as any)?.theme || "indigo";
 
   return (
     <>
+      <ThemeUpdater theme={theme} />
       <PollHistoryTracker slug={slug} question={poll.question} voteCount={totalVoters} />
       {showResults || userHasVoted ? (
         <ResultsDisplay
+
           pollId={poll.id}
           slug={slug}
           question={poll.question}

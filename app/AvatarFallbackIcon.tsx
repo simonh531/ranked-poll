@@ -16,8 +16,14 @@ async function AvatarFallbackIconWithData() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) {
-    return user.id.slice(0, 2);
+  
+  if (user && !user.is_anonymous) {
+    if (user.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return user.id.slice(0, 2).toUpperCase();
   }
-  return <User />;
+  
+  return <User className="h-4 w-4 text-muted-foreground" />;
 }
+

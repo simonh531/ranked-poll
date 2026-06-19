@@ -15,6 +15,7 @@ import CreatePollForm from "./CreatePollForm";
 import OptionInputs from "./OptionInputs";
 import Validation from "./Validation";
 import RecentPollsHome from "@/components/RecentPollsHome";
+import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Page() {
   return (
@@ -61,8 +62,10 @@ export default function Page() {
                       Shuffle option order
                     </label>
                   </Field>
+                  <ThemeSelector />
                 </FieldGroup>
               </FieldSet>
+
               <Validation />
             </CardContent>
             <CardFooter>
@@ -75,4 +78,5 @@ export default function Page() {
     </div>
   );
 }
+
 

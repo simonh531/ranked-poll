@@ -22,6 +22,7 @@ export default async function createPollAction(
 
   const description = formData.get("description");
   const randomize = formData.get("randomize") === "true";
+  const theme = formData.get("theme");
 
   const options = formData.getAll("option");
   const cleanedOptions: string[] = [];
@@ -49,6 +50,7 @@ export default async function createPollAction(
     const settings = {
       description: typeof description === "string" ? description.trim() : "",
       randomize,
+      theme: typeof theme === "string" ? theme.trim() : "indigo",
     };
 
     const { error } = await supabase.rpc("create_poll_with_options", {
@@ -58,6 +60,7 @@ export default async function createPollAction(
       user_id: user.id,
       settings,
     });
+
 
     if (error) {
       console.error(error);
