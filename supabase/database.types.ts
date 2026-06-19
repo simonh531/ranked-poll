@@ -192,6 +192,7 @@ export type Database = {
             }
             Returns: undefined
           }
+      reset_poll_votes: { Args: { target_poll_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

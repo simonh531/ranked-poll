@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import GuestAccountBanner from "@/components/GuestAccountBanner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 
 const merriweather = Merriweather({

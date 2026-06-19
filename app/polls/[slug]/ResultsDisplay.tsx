@@ -284,8 +284,8 @@ export default function ResultsDisplay({
                                 margin > 0
                                   ? "text-emerald-600 bg-emerald-500/5 hover:bg-emerald-500/10"
                                   : margin < 0
-                                  ? "text-rose-600 bg-rose-500/5 hover:bg-rose-500/10"
-                                  : "text-muted-foreground hover:bg-muted/30"
+                                    ? "text-rose-600 bg-rose-500/5 hover:bg-rose-500/10"
+                                    : "text-muted-foreground hover:bg-muted/30"
                               )}
                               onMouseEnter={() => setHoveredCell({ o1, o2, v1, v2 })}
                               onMouseLeave={() => setHoveredCell(null)}
@@ -405,8 +405,8 @@ export default function ResultsDisplay({
                                       item === pair.winner.name
                                         ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold"
                                         : item === pair.loser.name
-                                        ? "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400 font-bold"
-                                        : "bg-card text-foreground"
+                                          ? "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400 font-bold"
+                                          : "bg-card text-foreground"
                                     )}
                                   >
                                     {item}
