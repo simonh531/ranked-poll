@@ -2,14 +2,14 @@ import { Suspense } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 
-import Framework from "./Framework";
+import VoteDisplay from "./VoteDisplay";
 
 export default function Page({
   params,
   searchParams,
 }: PageProps<"/polls/[slug]">) {
   return (
-    <Suspense fallback={<Framework title="Loading..." options={[]} />}>
+    <Suspense fallback={<VoteDisplay title="Loading..." options={[]} />}>
       <PageWithData params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -26,5 +26,14 @@ async function PageWithData({ params }: PageProps<"/polls/[slug]">) {
   if (!poll) {
     return "Poll Not Found";
   }
-  return <Framework title={poll.question} options={["hi", "bye"]} />;
+  const { data: options } = await supabase
+    .from("poll_options")
+    .select("*")
+    .eq("poll_id", poll.id);
+  return (
+    <VoteDisplay
+      title={poll.question}
+      options={options?.map((o) => o.label) ?? []}
+    />
+  );
 }
