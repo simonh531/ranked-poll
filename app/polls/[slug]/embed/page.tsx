@@ -117,6 +117,8 @@ async function PageWithData({ params, searchParams }: PageProps) {
   const theme = (poll.settings as any)?.theme || "indigo";
   const isCreator = user ? poll.user_id === user.id : false;
   const isClosed = (poll.settings as any)?.closed || false;
+  const hideResultsSetting = (poll.settings as any)?.hideResults || false;
+  const resultsHidden = hideResultsSetting && !isClosed && !isCreator;
 
   return (
     <>
@@ -134,6 +136,7 @@ async function PageWithData({ params, searchParams }: PageProps) {
           userHasVoted={userHasVoted}
           isCreator={isCreator}
           isClosed={isClosed}
+          hideResults={hideResultsSetting}
         />
       ) : (
         <VoteDisplay

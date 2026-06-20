@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   X,
   Share2,
+  EyeOff,
 } from "lucide-react";
 import rankedPairsCalc, { makeRanks } from "@/utils/rankedPairsCalc";
 import VictoryGraph from "./VictoryGraph";
@@ -37,6 +38,7 @@ interface ResultsDisplayProps {
   isClosed?: boolean;
   randomize?: boolean;
   theme?: string;
+  hideResults?: boolean;
 }
 
 export default function ResultsDisplay({
@@ -53,6 +55,7 @@ export default function ResultsDisplay({
   isClosed = false,
   randomize = false,
   theme = "indigo",
+  hideResults = false,
 }: ResultsDisplayProps) {
   const router = useRouter();
 
@@ -67,6 +70,8 @@ export default function ResultsDisplay({
   // Admin state
   const [isClosedState, setIsClosedState] = useState(isClosed);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const resultsHidden = hideResults && !isClosedState && !isCreator;
 
   const handleToggleClosed = async () => {
     setIsUpdating(true);
@@ -104,6 +109,7 @@ export default function ResultsDisplay({
     params.set("question", question);
     params.set("description", description);
     params.set("randomize", randomize ? "true" : "false");
+    params.set("hideResults", hideResults ? "true" : "false");
     params.set("theme", theme);
     params.set("options", JSON.stringify(options));
     router.push(`/?${params.toString()}`);
@@ -266,7 +272,22 @@ export default function ResultsDisplay({
           </div>
         )}
 
-        <Tabs defaultValue="overview" className="w-full">
+        {resultsHidden && (
+          <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-indigo-200/60 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/5 rounded-2xl space-y-4 my-4">
+            <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <EyeOff className="w-6 h-6" />
+            </div>
+            <div className="space-y-2 max-w-sm">
+              <h3 className="font-bold text-lg text-foreground">Results are Private</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                The creator has configured this poll to keep results hidden until it is closed. This ensures a fair vote without social bias!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!resultsHidden && (
+          <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="detailed">Detailed View</TabsTrigger>
@@ -530,6 +551,7 @@ export default function ResultsDisplay({
             )}
           </TabsContent>
         </Tabs>
+        )}
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3">
@@ -560,6 +582,15 @@ export default function ResultsDisplay({
               <ArrowLeft className="w-4 h-4 mr-1.5" /> Change Vote
             </Button>
           )}
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDuplicatePoll}
+            className="w-full sm:w-auto text-xs"
+          >
+            <Copy className="w-4 h-4 mr-1.5" /> Use as Template
+          </Button>
 
           <Button size="sm" variant="default" onClick={() => setShowShareModal(true)} className="w-full sm:w-auto">
             <Share2 className="w-4 h-4 mr-2" />

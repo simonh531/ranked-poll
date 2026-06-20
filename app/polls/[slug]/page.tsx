@@ -111,6 +111,8 @@ async function PageWithData({ params, searchParams }: PageProps) {
 
   const isCreator = user ? poll.user_id === user.id : false;
   const isClosed = (poll.settings as any)?.closed || false;
+  const hideResultsSetting = (poll.settings as any)?.hideResults || false;
+  const resultsHidden = hideResultsSetting && !isClosed && !isCreator;
 
   // 4. Check if current user has already voted
   let userHasVoted = false;
@@ -189,6 +191,7 @@ async function PageWithData({ params, searchParams }: PageProps) {
           isClosed={isClosed}
           randomize={randomize}
           theme={theme}
+          hideResults={hideResultsSetting}
         />
       ) : (
         <VoteDisplay

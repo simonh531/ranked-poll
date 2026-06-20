@@ -27,6 +27,7 @@ export default async function Page({ searchParams }: PageProps) {
   const question = typeof resolvedSearchParams.question === "string" ? resolvedSearchParams.question : "";
   const description = typeof resolvedSearchParams.description === "string" ? resolvedSearchParams.description : "";
   const randomize = resolvedSearchParams.randomize === "true";
+  const hideResults = resolvedSearchParams.hideResults === "true";
   const theme = typeof resolvedSearchParams.theme === "string" ? resolvedSearchParams.theme : "";
 
   let initialOptions: string[] = [];
@@ -83,6 +84,19 @@ export default async function Page({ searchParams }: PageProps) {
                     />
                     <label htmlFor="randomize" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                       Shuffle option order
+                    </label>
+                  </Field>
+                  <Field orientation="horizontal" className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="hideResults"
+                      name="hideResults"
+                      value="true"
+                      defaultChecked={hideResults}
+                      className="h-4 w-4 accent-black rounded border-input cursor-pointer"
+                    />
+                    <label htmlFor="hideResults" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                      Hide results until closed
                     </label>
                   </Field>
                   <ThemeSelector initialTheme={theme} />

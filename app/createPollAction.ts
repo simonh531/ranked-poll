@@ -22,6 +22,7 @@ export default async function createPollAction(
 
   const description = formData.get("description");
   const randomize = formData.get("randomize") === "true";
+  const hideResults = formData.get("hideResults") === "true";
   const theme = formData.get("theme");
 
   const options = formData.getAll("option");
@@ -50,6 +51,7 @@ export default async function createPollAction(
     const settings = {
       description: typeof description === "string" ? description.trim() : "",
       randomize,
+      hideResults,
       theme: typeof theme === "string" ? theme.trim() : "indigo",
     };
 
