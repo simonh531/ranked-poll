@@ -29,7 +29,7 @@ export default function RecentPollsHome() {
   }
 
   return (
-    <Card className="w-full lg:max-w-xs shrink-0 shadow-md">
+    <Card className="w-full max-w-2xl lg:max-w-xs shrink-0 shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold flex items-center gap-2">

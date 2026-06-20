@@ -17,12 +17,32 @@ import Validation from "./Validation";
 import RecentPollsHome from "@/components/RecentPollsHome";
 import ThemeSelector from "@/components/ThemeSelector";
 
-export default function Page() {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
+
+  const question = typeof resolvedSearchParams.question === "string" ? resolvedSearchParams.question : "";
+  const description = typeof resolvedSearchParams.description === "string" ? resolvedSearchParams.description : "";
+  const randomize = resolvedSearchParams.randomize === "true";
+  const theme = typeof resolvedSearchParams.theme === "string" ? resolvedSearchParams.theme : "";
+
+  let initialOptions: string[] = [];
+  if (typeof resolvedSearchParams.options === "string") {
+    try {
+      initialOptions = JSON.parse(resolvedSearchParams.options);
+    } catch (e) {
+      console.error("Failed to parse options query parameter:", e);
+    }
+  }
+
   return (
-    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-5xl px-4 justify-center items-start my-8 mx-auto">
-      <div className="w-full max-w-200">
+    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-5xl px-4 justify-center items-center lg:items-start my-8 mx-auto">
+      <div className="w-full max-w-2xl lg:max-w-3xl">
         <CreatePollForm>
-          <Card className="w-full max-w-200">
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>
                 <H1>Create a Ranked Poll</H1>
@@ -36,6 +56,7 @@ export default function Page() {
                     <Input
                       name="question"
                       placeholder="What would you like to poll?"
+                      defaultValue={question}
                       required
                     />
                   </Field>
@@ -44,11 +65,12 @@ export default function Page() {
                     <Textarea
                       name="description"
                       placeholder="Provide details or instructions for this poll..."
+                      defaultValue={description}
                     />
                   </Field>
                   <Field>
                     <FieldLabel>Options</FieldLabel>
-                    <OptionInputs />
+                    <OptionInputs initialOptions={initialOptions} />
                   </Field>
                   <Field orientation="horizontal" className="flex items-center gap-2">
                     <input
@@ -56,13 +78,14 @@ export default function Page() {
                       id="randomize"
                       name="randomize"
                       value="true"
+                      defaultChecked={randomize}
                       className="h-4 w-4 accent-black rounded border-input cursor-pointer"
                     />
                     <label htmlFor="randomize" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                       Shuffle option order
                     </label>
                   </Field>
-                  <ThemeSelector />
+                  <ThemeSelector initialTheme={theme} />
                 </FieldGroup>
               </FieldSet>
 

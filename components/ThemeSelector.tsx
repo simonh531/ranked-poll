@@ -1,12 +1,19 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAppTheme } from "./ThemeProvider";
 import { Check, Paintbrush, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { THEME_PRESETS, getSecondaryColor } from "@/utils/themes";
 
-export default function ThemeSelector() {
+export default function ThemeSelector({ initialTheme }: { initialTheme?: string }) {
   const { theme, setTheme } = useAppTheme();
+
+  useEffect(() => {
+    if (initialTheme) {
+      setTheme(initialTheme);
+    }
+  }, [initialTheme, setTheme]);
 
   const isCustom = !Object.keys(THEME_PRESETS).some((name) => name === theme);
 

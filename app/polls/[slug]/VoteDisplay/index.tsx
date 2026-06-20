@@ -11,7 +11,7 @@ import {
   ArrowUp,
   ArrowDown,
   X,
-  Square,
+  Plus,
   CheckSquare,
   ThumbsUp,
   ThumbsDown,
@@ -19,6 +19,8 @@ import {
   Copy,
   Calendar,
   Eye,
+  AlertTriangle,
+  Share2,
 } from "lucide-react";
 import { submitVoteAction } from "../submitVoteAction";
 
@@ -98,6 +100,7 @@ interface VoteDisplayProps {
   options: string[];
   randomize: boolean;
   totalVoters: number;
+  isClosed?: boolean;
 }
 
 export default function VoteDisplay({
@@ -109,6 +112,7 @@ export default function VoteDisplay({
   options,
   randomize,
   totalVoters,
+  isClosed = false,
 }: VoteDisplayProps) {
   const router = useRouter();
 
@@ -120,6 +124,8 @@ export default function VoteDisplay({
   const [isDragging, setIsDragging] = useState("");
   const [outlineNeutral, setOutlineNeutral] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -206,6 +212,18 @@ export default function VoteDisplay({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {isClosed && (
+          <div className="p-4 rounded-xl border border-amber-200 bg-amber-500/10 text-amber-800 dark:text-amber-300 dark:border-amber-900/30 flex items-start gap-3 text-left">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-sm">Voting is Closed</h4>
+              <p className="text-xs text-muted-foreground">
+                This poll has been closed by its creator. You can no longer cast a ballot, but you can view the final results.
+              </p>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md font-medium">
             {error}
@@ -371,38 +389,38 @@ export default function VoteDisplay({
                   <span className="text-sm font-medium select-none">{option}</span>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  {advanced ? (
-                    <>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {advanced ? (
+                      <>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                          onClick={() => setRank({ ...rank, up: [...rank.up, option] })}
+                        >
+                          <ThumbsUp className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                          onClick={() => setRank({ ...rank, down: [...rank.down, option] })}
+                        >
+                          <ThumbsDown className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    ) : (
                       <Button
                         size="icon"
-                        variant="outline"
+                        variant="ghost"
                         className="h-7 w-7 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                         onClick={() => setRank({ ...rank, up: [...rank.up, option] })}
                       >
-                        <ThumbsUp className="h-3.5 w-3.5" />
+                        <Plus className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-7 w-7 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
-                        onClick={() => setRank({ ...rank, down: [...rank.down, option] })}
-                      >
-                        <ThumbsDown className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7"
-                      onClick={() => setRank({ ...rank, up: [...rank.up, option] })}
-                    >
-                      <Square className="h-4 w-4" />
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
             ))}
 
             {unranked.length === 0 && (
@@ -581,10 +599,10 @@ export default function VoteDisplay({
           <Button
             size="default"
             onClick={handleVote}
-            disabled={loading || submitted || (rank.up.length === 0 && rank.down.length === 0)}
+            disabled={loading || submitted || isClosed || (rank.up.length === 0 && rank.down.length === 0)}
             className="flex-1 sm:flex-initial"
           >
-            {loading ? "Submitting..." : submitted ? "Vote Submitted" : "Submit Ballot"}
+            {loading ? "Submitting..." : submitted ? "Vote Submitted" : isClosed ? "Voting Closed" : "Submit Ballot"}
           </Button>
           <span className="text-xs text-muted-foreground font-medium border border-muted px-2.5 py-1.5 rounded-md bg-muted/20 shrink-0">
             {totalVoters} {totalVoters === 1 ? "ballot" : "ballots"} cast
@@ -597,12 +615,74 @@ export default function VoteDisplay({
             See Results
           </Button>
 
-          <Button size="sm" variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto">
-            <Copy className="w-4 h-4 mr-2" />
-            {copied ? "Copied!" : "Copy Share Link"}
+          <Button size="sm" variant="outline" onClick={() => setShowShareModal(true)} className="w-full sm:w-auto">
+            <Share2 className="w-4 h-4 mr-2" />
+            Share & Embed
           </Button>
         </div>
       </CardFooter>
+
+      {/* Share & Embed Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-card border rounded-2xl w-full max-w-md shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200 text-foreground">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-lg font-bold mb-4">Share & Embed Poll</h3>
+            
+            <div className="space-y-4">
+              {/* Direct Link */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Direct Share Link</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}`}
+                    className="flex-1 text-sm bg-muted px-3 py-2 rounded-lg border focus:outline-none"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleCopyLink}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Embed Code */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Embed HTML (IFrame)</label>
+                <div className="flex gap-2">
+                  <textarea
+                    readOnly
+                    rows={3}
+                    value={`<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}/embed" width="100%" height="650" style="border:none; border-radius:12px; background:transparent;" allow="clipboard-write"></iframe>`}
+                    className="flex-1 text-xs font-mono bg-muted px-3 py-2 rounded-lg border focus:outline-none resize-none"
+                  />
+                  <Button
+                    size="sm"
+                    className="self-end"
+                    onClick={() => {
+                      const embedCode = `<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}/embed" width="100%" height="650" style="border:none; border-radius:12px; background:transparent;" allow="clipboard-write"></iframe>`;
+                      navigator.clipboard.writeText(embedCode);
+                      setCopiedEmbed(true);
+                      setTimeout(() => setCopiedEmbed(false), 2000);
+                    }}
+                  >
+                    {copiedEmbed ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

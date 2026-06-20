@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,11 @@ import {
   CheckCircle,
   AlertTriangle,
   ArrowLeft,
+  X,
+  Share2,
 } from "lucide-react";
 import rankedPairsCalc, { makeRanks } from "@/utils/rankedPairsCalc";
+import VictoryGraph from "./VictoryGraph";
 
 interface ResultsDisplayProps {
   pollId: string;
@@ -29,6 +33,10 @@ interface ResultsDisplayProps {
   ballots: { vote: string[]; lowVote: string[]; count: number }[];
   totalVoters: number;
   userHasVoted: boolean;
+  isCreator?: boolean;
+  isClosed?: boolean;
+  randomize?: boolean;
+  theme?: string;
 }
 
 export default function ResultsDisplay({
@@ -41,6 +49,10 @@ export default function ResultsDisplay({
   ballots,
   totalVoters,
   userHasVoted,
+  isCreator = false,
+  isClosed = false,
+  randomize = false,
+  theme = "indigo",
 }: ResultsDisplayProps) {
   const router = useRouter();
 
@@ -49,6 +61,71 @@ export default function ResultsDisplay({
   const [detailSubTab, setDetailSubTab] = useState("grid");
   const [step, setStep] = useState(1);
   const [hoveredCell, setHoveredCell] = useState<{ o1: string; o2: string; v1: number; v2: number } | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+
+  // Admin state
+  const [isClosedState, setIsClosedState] = useState(isClosed);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleToggleClosed = async () => {
+    setIsUpdating(true);
+    const supabase = createClient();
+    try {
+      const { data: poll, error: fetchError } = await supabase
+        .from("polls")
+        .select("settings")
+        .eq("id", pollId)
+        .single();
+      if (fetchError) throw fetchError;
+
+      const currentSettings = (poll?.settings as any) || {};
+      const newClosedState = !isClosedState;
+      const updatedSettings = { ...currentSettings, closed: newClosedState };
+
+      const { error: updateError } = await supabase
+        .from("polls")
+        .update({ settings: updatedSettings })
+        .eq("id", pollId);
+      if (updateError) throw updateError;
+
+      setIsClosedState(newClosedState);
+      router.refresh();
+    } catch (err) {
+      console.error("Error toggling closed state:", err);
+      alert("Failed to update poll status. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDuplicatePoll = () => {
+    const params = new URLSearchParams();
+    params.set("question", question);
+    params.set("description", description);
+    params.set("randomize", randomize ? "true" : "false");
+    params.set("theme", theme);
+    params.set("options", JSON.stringify(options));
+    router.push(`/?${params.toString()}`);
+  };
+
+  const handleDeletePoll = async () => {
+    if (!window.confirm("Are you sure you want to delete this poll? This will permanently delete the poll, all options, and all cast votes. This cannot be undone.")) {
+      return;
+    }
+    setIsUpdating(true);
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.from("polls").delete().eq("id", pollId);
+      if (error) throw error;
+      router.push("/");
+    } catch (err) {
+      console.error("Error deleting poll:", err);
+      alert("Failed to delete poll. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   // 1. Run Ranked Pairs calculations
   const {
@@ -145,6 +222,50 @@ export default function ResultsDisplay({
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {isCreator && (
+          <div className="p-4 rounded-xl border border-amber-200/50 bg-amber-50/20 dark:border-amber-900/30 dark:bg-amber-950/10 space-y-3">
+            <div className="flex items-center justify-between border-b pb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                Creator Admin Settings
+              </span>
+              {isClosedState && (
+                <span className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full uppercase">
+                  Closed
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant={isClosedState ? "default" : "outline"}
+                className="cursor-pointer text-xs"
+                onClick={handleToggleClosed}
+                disabled={isUpdating}
+              >
+                {isClosedState ? "Re-open Poll" : "Close Poll"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="cursor-pointer text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-100/50"
+                onClick={handleDuplicatePoll}
+                disabled={isUpdating}
+              >
+                Duplicate Poll
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="cursor-pointer text-xs"
+                onClick={handleDeletePoll}
+                disabled={isUpdating}
+              >
+                Delete Poll
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -200,15 +321,17 @@ export default function ResultsDisplay({
                   {mainPairs.map((pair, idx) => (
                     <div
                       key={idx}
-                      className="flex justify-between items-center text-xs p-2.5 border rounded-lg bg-card"
+                      className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 text-xs p-2.5 border rounded-lg bg-card"
                     >
-                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {pair.winner}
-                      </span>
-                      <span className="text-muted-foreground px-2">
-                        beats {pair.loser} ({pair.wVotes} vs {pair.lVotes})
-                      </span>
-                      <span className="font-bold border px-1.5 py-0.5 rounded bg-muted">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate">
+                          {pair.winner}
+                        </span>
+                        <span className="text-muted-foreground">
+                          beats {pair.loser} ({pair.wVotes} vs {pair.lVotes})
+                        </span>
+                      </div>
+                      <span className="font-bold border px-1.5 py-0.5 rounded bg-muted shrink-0">
                         +{pair.wVotes - pair.lVotes}
                       </span>
                     </div>
@@ -319,30 +442,13 @@ export default function ResultsDisplay({
             {/* B. RESOLUTION STEPS */}
             {detailSubTab === "sort" && history.length > 0 && (
               <div className="space-y-4">
-                {/* Step Slider/Pagination controls */}
-                <div className="flex items-center justify-between border p-3 rounded-lg bg-card shadow-sm">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    Step {step} of {history.length}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={step === 1}
-                      onClick={() => setStep(step - 1)}
-                    >
-                      Prev
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={step === history.length}
-                      onClick={() => setStep(step + 1)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
+                <VictoryGraph
+                  options={options}
+                  rankedPairs={rankedPairs}
+                  history={history}
+                  step={step}
+                  setStep={setStep}
+                />
 
                 {/* Current Pair details and Cycle Lock Check */}
                 {rankedPairs[step - 1] && (() => {
@@ -445,22 +551,84 @@ export default function ResultsDisplay({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          {userHasVoted && (
+          {userHasVoted && !isClosedState && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => router.push(`/polls/${slug}`)}
+              onClick={() => router.push(`/polls/${slug}?action=vote`)}
             >
               <ArrowLeft className="w-4 h-4 mr-1.5" /> Change Vote
             </Button>
           )}
 
-          <Button size="sm" variant="default" onClick={handleCopyLink} className="w-full sm:w-auto">
-            <Copy className="w-4 h-4 mr-2" />
-            {copied ? "Copied!" : "Copy Share Link"}
+          <Button size="sm" variant="default" onClick={() => setShowShareModal(true)} className="w-full sm:w-auto">
+            <Share2 className="w-4 h-4 mr-2" />
+            Share & Embed
           </Button>
         </div>
       </CardFooter>
+
+      {/* Share & Embed Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-card border rounded-2xl w-full max-w-md shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200 text-foreground">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-lg font-bold mb-4">Share & Embed Poll</h3>
+            
+            <div className="space-y-4">
+              {/* Direct Link */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Direct Share Link</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}`}
+                    className="flex-1 text-sm bg-muted px-3 py-2 rounded-lg border focus:outline-none"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleCopyLink}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Embed Code */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Embed HTML (IFrame)</label>
+                <div className="flex gap-2">
+                  <textarea
+                    readOnly
+                    rows={3}
+                    value={`<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}/embed" width="100%" height="650" style="border:none; border-radius:12px; background:transparent;" allow="clipboard-write"></iframe>`}
+                    className="flex-1 text-xs font-mono bg-muted px-3 py-2 rounded-lg border focus:outline-none resize-none"
+                  />
+                  <Button
+                    size="sm"
+                    className="self-end"
+                    onClick={() => {
+                      const embedCode = `<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/polls/${slug}/embed" width="100%" height="650" style="border:none; border-radius:12px; background:transparent;" allow="clipboard-write"></iframe>`;
+                      navigator.clipboard.writeText(embedCode);
+                      setCopiedEmbed(true);
+                      setTimeout(() => setCopiedEmbed(false), 2000);
+                    }}
+                  >
+                    {copiedEmbed ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

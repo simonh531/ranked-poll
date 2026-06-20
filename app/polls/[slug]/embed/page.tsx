@@ -1,64 +1,14 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 
-import VoteDisplay from "./VoteDisplay";
-import ResultsDisplay from "./ResultsDisplay";
-import PollHistoryTracker from "@/components/PollHistoryTracker";
-import ThemeUpdater from "./ThemeUpdater";
+import VoteDisplay from "../VoteDisplay";
+import ResultsDisplay from "../ResultsDisplay";
+import ThemeUpdater from "../ThemeUpdater";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: poll } = await supabase
-    .from("polls")
-    .select("question, settings")
-    .eq("slug", slug)
-    .single();
-
-  if (!poll) {
-    return {
-      title: "Poll Not Found",
-    };
-  }
-
-  const question = poll.question;
-  const description = (poll.settings as any)?.description || "Cast your ranked choice vote now!";
-  const ogImageUrl = `/api/polls/${slug}/og`;
-
-  return {
-    title: `${question} - Ranked Choice Poll`,
-    description,
-    openGraph: {
-      title: question,
-      description,
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: question,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: question,
-      description,
-      images: [ogImageUrl],
-    },
-  };
 }
 
 export default function Page({
@@ -68,7 +18,7 @@ export default function Page({
   return (
     <Suspense fallback={
       <div className="flex flex-col gap-4 p-6 justify-center items-center">
-        <h3 className="text-xl font-bold">Loading Poll...</h3>
+        <h3 className="text-xl font-bold">Loading Embed...</h3>
       </div>
     }>
       <PageWithData params={params} searchParams={searchParams} />
@@ -80,7 +30,6 @@ async function PageWithData({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const showResults = resolvedSearchParams && resolvedSearchParams.results !== undefined;
-  const forceVote = resolvedSearchParams && resolvedSearchParams.action === "vote";
 
   const supabase = await createClient();
 
@@ -108,9 +57,6 @@ async function PageWithData({ params, searchParams }: PageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const isCreator = user ? poll.user_id === user.id : false;
-  const isClosed = (poll.settings as any)?.closed || false;
 
   // 4. Check if current user has already voted
   let userHasVoted = false;
@@ -169,12 +115,13 @@ async function PageWithData({ params, searchParams }: PageProps) {
   const description = (poll.settings as any)?.description || "";
   const randomize = (poll.settings as any)?.randomize || false;
   const theme = (poll.settings as any)?.theme || "indigo";
+  const isCreator = user ? poll.user_id === user.id : false;
+  const isClosed = (poll.settings as any)?.closed || false;
 
   return (
     <>
       <ThemeUpdater theme={theme} />
-      <PollHistoryTracker slug={slug} question={poll.question} voteCount={totalVoters} />
-      {showResults || (userHasVoted && !forceVote) || isClosed ? (
+      {showResults || userHasVoted || isClosed ? (
         <ResultsDisplay
           pollId={poll.id}
           slug={slug}
@@ -187,8 +134,6 @@ async function PageWithData({ params, searchParams }: PageProps) {
           userHasVoted={userHasVoted}
           isCreator={isCreator}
           isClosed={isClosed}
-          randomize={randomize}
-          theme={theme}
         />
       ) : (
         <VoteDisplay

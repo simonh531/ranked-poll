@@ -1,26 +1,11 @@
 import type { Metadata } from "next";
-
 import { Inter, Merriweather, Open_Sans } from "next/font/google";
-import Link from "next/link";
-
 import "./globals.css";
 import { ReactNode } from "react";
-
-import Logo from "@/components/Logo";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
-
-import RecentPollsNavbar from "@/components/RecentPollsNavbar";
-
-import AvatarFallbackIcon from "./AvatarFallbackIcon";
 import { cn } from "@/lib/utils";
-import GuestAccountBanner from "@/components/GuestAccountBanner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ConditionalLayout from "@/components/ConditionalLayout";
+import AvatarFallbackIcon from "@/app/AvatarFallbackIcon";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -61,42 +46,9 @@ export default function RootLayout({
 
 
 
-          <nav className="sticky top-0 z-50 w-full border-b border-indigo-200/80 dark:border-indigo-900/50 bg-background/80 backdrop-blur-md shadow-sm">
-            <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-6">
-              <Link href="/" className="hover:opacity-90 transition-opacity">
-                <Logo className="text-2xl mr-4" />
-              </Link>
-              <div className="grow flex justify-start items-center">
-                <NavigationMenu>
-                  <NavigationMenuList>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink
-                        render={
-                          <Link className="text-sm font-semibold hover:text-primary transition-colors px-3 py-2 rounded-md" href="/about">
-                            About
-                          </Link>
-                        }
-                      />
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
-              </div>
-              <div className="flex items-center gap-3">
-                <RecentPollsNavbar />
-                <Link href="/login">
-                  <Avatar className="hover:bg-muted border shadow-sm">
-                    <AvatarFallback className="bg-transparent">
-                      <AvatarFallbackIcon />
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-              </div>
-            </div>
-          </nav>
-          <GuestAccountBanner />
-          <main className="flex-1 flex flex-col w-full items-center py-8">
+          <ConditionalLayout avatarFallbackIcon={<AvatarFallbackIcon />}>
             {children}
-          </main>
+          </ConditionalLayout>
         </ThemeProvider>
       </body>
 

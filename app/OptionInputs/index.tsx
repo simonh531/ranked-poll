@@ -5,14 +5,19 @@ import { useRef, useState } from "react";
 
 import OptionInput from "./OptionInput";
 
-export default function OptionInputs() {
-  const keyCounter = useRef(2);
-  const [options, setOptions] = useState(
-    OrderedMap([
+export default function OptionInputs({ initialOptions }: { initialOptions?: string[] }) {
+  const [options, setOptions] = useState(() => {
+    if (initialOptions && initialOptions.length > 0) {
+      const entries: [number, string][] = initialOptions.map((opt, idx) => [idx + 1, opt]);
+      entries.push([initialOptions.length + 1, ""]);
+      return OrderedMap(entries);
+    }
+    return OrderedMap([
       [1, ""],
       [2, ""],
-    ]),
-  );
+    ]);
+  });
+  const keyCounter = useRef(initialOptions && initialOptions.length > 0 ? initialOptions.length + 1 : 2);
   const validCount = options.count((option) => option.trim() !== "");
   return options.toArray().map(([key, value], index) => (
     <OptionInput
