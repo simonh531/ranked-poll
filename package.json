@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"supabase start\" \"next dev\"",
     "build": "next build",
-    "vercel-build": "npx supabase db push && next build",
+    "vercel-build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "bun test",
