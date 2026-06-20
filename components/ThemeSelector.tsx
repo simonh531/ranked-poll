@@ -75,6 +75,7 @@ export default function ThemeSelector({ initialTheme }: { initialTheme?: string 
                 borderColor: config.secondary,
               }}
               title={`Preset ${name}`}
+              aria-label={`Theme: ${name}`}
             >
               {isActive && <Check className="w-3 h-3 text-white drop-shadow-md" />}
             </button>

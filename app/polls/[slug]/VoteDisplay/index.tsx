@@ -396,6 +396,7 @@ export default function VoteDisplay({
                           size="icon"
                           variant="outline"
                           className="h-7 w-7 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                          aria-label={`Rank up ${option}`}
                           onClick={() => setRank({ ...rank, up: [...rank.up, option] })}
                         >
                           <ThumbsUp className="h-3.5 w-3.5" />
@@ -414,6 +415,7 @@ export default function VoteDisplay({
                         size="icon"
                         variant="ghost"
                         className="h-7 w-7 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                        aria-label={`Rank ${option}`}
                         onClick={() => setRank({ ...rank, up: [...rank.up, option] })}
                       >
                         <Plus className="h-4 w-4" />
