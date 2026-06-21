@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "types": ["bun-types"],
+    "types": [
+      "bun-types"
+    ],
     "target": "ES2017",
     "lib": [
       "dom",
@@ -38,7 +40,6 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules",
-    "old_app"
+    "node_modules"
   ]
 }
