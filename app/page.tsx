@@ -41,9 +41,41 @@ export default async function Page({ searchParams }: PageProps) {
     }
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://rankedpoll.com/#software",
+        "name": "Ranked Poll",
+        "url": "https://rankedpoll.com",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "All",
+        "description": "Instantly create and share ranked choice polls for free. Learn about Condorcet voting and the Ranked Pairs algorithm.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://rankedpoll.com/#website",
+        "url": "https://rankedpoll.com",
+        "name": "Ranked Poll",
+        "description": "Instantly create and share ranked choice polls! Learn about Condorcet voting and the Ranked Pairs method. Free, open source, and no sign-up required."
+      }
+    ]
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-5xl px-4 justify-center items-center lg:items-start my-8 mx-auto">
-      <div className="w-full max-w-2xl lg:max-w-3xl">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-5xl px-4 justify-center items-center lg:items-start my-8 mx-auto">
+        <div className="w-full max-w-2xl lg:max-w-3xl">
         <CreatePollForm>
           <Card className="w-full">
             <CardHeader>
@@ -115,6 +147,7 @@ export default async function Page({ searchParams }: PageProps) {
       </div>
       <RecentPollsHome />
     </div>
+    </>
   );
 }
 

@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Allow: /api/sitemap
 
-Sitemap: https://rankedpoll.com/api/sitemap
+Sitemap: https://rankedpoll.com/sitemap.xml

@@ -21,11 +21,56 @@ const openSans = Open_Sans({
 });
 
 const description =
-  "Instantly create and share ranked vote polls! Learn about ranked voting and its uses. Free and no sign up needed! Open Source!";
+  "Instantly create and share ranked choice polls! Learn about Condorcet voting and the Ranked Pairs method. Free, open source, and no sign-up required.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://rankedpoll.com"),
+  title: {
+    default: "Ranked Poll - Create and Share Ranked Choice Polls",
+    template: "%s | Ranked Poll",
+  },
   description,
-  title: "Ranked Poll",
+  keywords: [
+    "ranked choice voting",
+    "ranked poll",
+    "condorcet voting",
+    "ranked pairs",
+    "tideman method",
+    "voting system",
+    "online poll maker",
+    "free online polls",
+    "instant run-off voting",
+    "ballot creator",
+  ],
+  alternates: {
+    canonical: "./",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://rankedpoll.com",
+    siteName: "Ranked Poll",
+    title: "Ranked Poll - Create and Share Ranked Choice Polls",
+    description,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ranked Poll - Create and Share Ranked Choice Polls",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ranked Poll - Create and Share Ranked Choice Polls",
+    description,
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
