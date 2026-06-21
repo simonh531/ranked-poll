@@ -28,7 +28,7 @@ jobs:
         run: bun install
 
       - name: Run unit tests
-        run: bun test
+        run: bun run test
 
   # ─────────────────────────────────────────────
   # Job 2: Type Check (runs on every PR & push)

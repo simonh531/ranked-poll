@@ -8,7 +8,7 @@
     "vercel-build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "bun test",
+    "test": "bun test utils/",
     "test:e2e": "npx playwright test --timeout=60000",
     "gen_db_types": "supabase gen types --local typescript > supabase/database.types.ts"
   },
