@@ -17,6 +17,8 @@ import Validation from "./Validation";
 import RecentPollsHome from "@/components/RecentPollsHome";
 import ThemeSelector from "@/components/ThemeSelector";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
