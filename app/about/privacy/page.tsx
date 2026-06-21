@@ -35,7 +35,7 @@ export default function PrivacyPage() {
         </div>
 
         <Separator />
-
+        {/* 
         <div>
           <h3 className="text-lg font-bold text-foreground mb-2">Contact Us</h3>
           <p>
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
             </a>
             .
           </p>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
