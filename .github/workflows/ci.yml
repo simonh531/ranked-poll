@@ -105,17 +105,6 @@ jobs:
 
       - name: Build Next.js app
         run: bun run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-      - name: Start Next.js server
-        run: npx next start &
-        env:
-          PORT: 3000
-
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Run Playwright E2E tests
         run: npx playwright test --timeout=60000
