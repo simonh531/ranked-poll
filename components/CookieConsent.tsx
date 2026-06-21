@@ -52,7 +52,7 @@ export default function CookieConsent() {
       </p>
 
       <div className="flex items-center justify-end gap-2 pt-1">
-        <Link href="/about#privacy">
+        <Link href="/about/privacy">
           <Button
             size="sm"
             variant="outline"
