@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen, HelpCircle, Sliders } from "lucide-react";
+import { BookOpen, HelpCircle, Sliders, Shield } from "lucide-react";
 
 export const metadata = {
   title: "About | Ranked Poll",
@@ -29,6 +29,13 @@ export default function AboutPage() {
             >
               <Sliders className="w-4 h-4" />
               <span>Calculation</span>
+            </Link>
+            <Link
+              href="/about#privacy"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Privacy</span>
             </Link>
             <Separator className="my-1" />
             <Link
@@ -94,6 +101,27 @@ export default function AboutPage() {
                     reveals a clear source node representing the ultimate winner.
                   </li>
                 </ol>
+              </div>
+
+              <Separator />
+
+              <div id="privacy" className="scroll-mt-6 space-y-3">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  Privacy & Cookie Policy
+                </h3>
+                <p>
+                  Ranked Poll is built with privacy in mind. We do not use any advertising, tracking, or marketing cookies.
+                </p>
+                <h4 className="text-sm font-semibold text-foreground mt-4 mb-2">What we store:</h4>
+                <ul className="list-disc list-inside space-y-2 pl-2">
+                  <li>
+                    <strong className="text-foreground">Authentication Cookies:</strong> Standard, secure session identifiers managed by Supabase Auth, used solely to keep you logged in and link votes to anonymous guest sessions.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Local Storage:</strong> We use your browser's local storage to save your recent poll browsing history so you can easily access your created or voted polls from the navigation bar.
+                  </li>
+                </ul>
               </div>
 
               <Separator />

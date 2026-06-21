@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { X, Shield } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function CookieConsent() {
@@ -51,14 +52,16 @@ export default function CookieConsent() {
       </p>
 
       <div className="flex items-center justify-end gap-2 pt-1">
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-[11px] h-7 px-2.5 cursor-pointer"
-          onClick={() => setIsVisible(false)}
-        >
-          Manage
-        </Button>
+        <Link href="/about#privacy">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-[11px] h-7 px-2.5 cursor-pointer"
+            onClick={() => setIsVisible(false)}
+          >
+            Privacy Policy
+          </Button>
+        </Link>
         <Button
           size="sm"
           className="text-[11px] h-7 px-3.5 cursor-pointer"
