@@ -82,6 +82,18 @@ export default function ConditionalLayout({ children, avatarFallbackIcon }: Cond
       <main className="flex-1 flex flex-col w-full items-center py-8">
         {children}
       </main>
+      <footer className="w-full border-t border-indigo-100/50 dark:border-indigo-950/40 py-6 mt-auto bg-background/50 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground/80">
+          <div>
+            &copy; {new Date().getFullYear()} Ranked Poll. All rights reserved.
+          </div>
+          <div className="flex gap-4">
+            <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+            <Link href="/about/calculation" className="hover:text-foreground transition-colors">Calculation</Link>
+            <Link href="/about/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          </div>
+        </div>
+      </footer>
       <CookieConsent />
     </>
   );
