@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Shield } from "lucide-react";
 
 export const metadata = {
@@ -31,6 +32,19 @@ export default function PrivacyPage() {
               <strong className="text-foreground">Local Storage:</strong> We use your browser's local storage to save your recent poll browsing history so you can easily access your created or voted polls from the navigation bar.
             </li>
           </ul>
+        </div>
+
+        <Separator />
+
+        <div>
+          <h3 className="text-lg font-bold text-foreground mb-2">Contact Us</h3>
+          <p>
+            If you have any questions, feedback, or would like to request deletion of your data, feel free to reach out to us at{" "}
+            <a href="mailto:hello@rankedpoll.com" className="text-primary hover:underline font-medium">
+              hello@rankedpoll.com
+            </a>
+            .
+          </p>
         </div>
       </CardContent>
     </Card>
