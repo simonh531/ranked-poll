@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Unit Tests (runs on every PR & push)
+  # Fast, no infra required — just Bun + TypeScript
+  # ─────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun run test
+
+  # ─────────────────────────────────────────────
+  # Job 2: Type Check (runs on every PR & push)
+  # Ensures no TypeScript errors were introduced
+  # ─────────────────────────────────────────────
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run TypeScript type check
+        run: bun tsc --noEmit
+
+  # ─────────────────────────────────────────────
+  # Job 3: E2E Tests (runs on every PR & push)
+  # Starts Supabase locally, builds & serves the
+  # Next.js app, then runs Playwright tests.
+  # ─────────────────────────────────────────────
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [unit-tests, typecheck]
+    # E2E tests need environment secrets for Supabase
+    # Skip if the PR is from a fork (no access to secrets)
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js (required for Playwright runner)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Write .env.local from Supabase local config
+        run: |
+          SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')
+          ANON_KEY=$(supabase status --output json | jq -r '.ANON_KEY')
+          echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> .env.local
+
+      - name: Build Next.js app
+        run: bun run build
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test --timeout=60000
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop
+
