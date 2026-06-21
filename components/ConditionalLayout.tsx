@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import RecentPollsNavbar from "@/components/RecentPollsNavbar";
 import GuestAccountBanner from "@/components/GuestAccountBanner";
-import CookieConsent from "@/components/CookieConsent";
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -94,7 +93,6 @@ export default function ConditionalLayout({ children, avatarFallbackIcon }: Cond
           </div>
         </div>
       </footer>
-      <CookieConsent />
     </>
   );
 }

@@ -19,17 +19,20 @@ export default function PrivacyPage() {
       </CardHeader>
       <CardContent className="space-y-6 text-sm md:text-base leading-relaxed text-muted-foreground">
         <p>
-          Ranked Poll is built with privacy in mind. We do not use any advertising, tracking, or marketing cookies.
+          Ranked Poll is built with transparency in mind. We use a combination of essential cookies, local storage, and standard advertising partners to support and operate this service.
         </p>
 
         <div>
-          <h3 className="text-lg font-bold text-foreground mb-2">What we store:</h3>
+          <h3 className="text-lg font-bold text-foreground mb-2">What we store &amp; use:</h3>
           <ul className="list-disc list-inside space-y-3 pl-2">
             <li>
-              <strong className="text-foreground">Authentication Cookies:</strong> Standard, secure session identifiers managed by Supabase Auth, used solely to keep you logged in and link votes to anonymous guest sessions.
+              <strong className="text-foreground">Authentication &amp; Session Cookies:</strong> Standard, secure session identifiers managed by Supabase Auth, used solely to keep you logged in and link votes to anonymous guest sessions.
             </li>
             <li>
               <strong className="text-foreground">Local Storage:</strong> We use your browser's local storage to save your recent poll browsing history so you can easily access your created or voted polls from the navigation bar.
+            </li>
+            <li>
+              <strong className="text-foreground">Advertising Cookies (Google AdSense):</strong> We partner with Google AdSense to serve ads. Google uses cookies to serve ads based on your prior visits to this website or other sites. You can opt out of personalized advertising by visiting Google's Ads Settings.
             </li>
           </ul>
         </div>
