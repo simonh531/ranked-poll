@@ -102,6 +102,7 @@ jobs:
           ANON_KEY=$(supabase status --output json | jq -r '.ANON_KEY')
           echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL" >> .env.local
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> .env.local
 
       - name: Build Next.js app
         run: bun run build
