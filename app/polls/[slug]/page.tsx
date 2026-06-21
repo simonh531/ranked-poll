@@ -84,50 +84,40 @@ async function PageWithData({ params, searchParams }: PageProps) {
 
   const supabase = await createClient();
 
-  // 1. Fetch Poll
-  const { data: poll } = await supabase
-    .from("polls")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  // 1. Fetch Poll & User Session in parallel
+  const [pollResult, userResult] = await Promise.all([
+    supabase
+      .from("polls")
+      .select("*")
+      .eq("slug", slug)
+      .single(),
+    supabase.auth.getUser(),
+  ]);
+
+  const poll = pollResult.data;
+  const user = userResult.data?.user;
 
   if (!poll) {
     return <div className="p-8 text-center text-red-500 font-bold">Poll Not Found</div>;
   }
 
-  // 2. Fetch Options
-  const { data: options } = await supabase
+  // 2. Fetch Options, User's Vote, and All Votes in parallel
+  const optionsPromise = supabase
     .from("poll_options")
     .select("*")
     .eq("poll_id", poll.id)
     .order("position", { ascending: true });
 
-  const optionLabels = options?.map((o) => o.label) ?? [];
+  const userVotePromise = user
+    ? supabase
+        .from("votes")
+        .select("id")
+        .eq("poll_id", poll.id)
+        .eq("user_id", user.id)
+        .limit(1)
+    : Promise.resolve({ data: null });
 
-  // 3. Get Session / User
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const isCreator = user ? poll.user_id === user.id : false;
-  const isClosed = (poll.settings as any)?.closed || false;
-  const hideResultsSetting = (poll.settings as any)?.hideResults || false;
-  const resultsHidden = hideResultsSetting && !isClosed && !isCreator;
-
-  // 4. Check if current user has already voted
-  let userHasVoted = false;
-  if (user) {
-    const { data: existingVotes } = await supabase
-      .from("votes")
-      .select("id")
-      .eq("poll_id", poll.id)
-      .eq("user_id", user.id)
-      .limit(1);
-    userHasVoted = (existingVotes?.length ?? 0) > 0;
-  }
-
-  // 5. Fetch all votes to count and calculate results
-  const { data: allVotes } = await supabase
+  const allVotesPromise = supabase
     .from("votes")
     .select(`
       user_id,
@@ -137,6 +127,25 @@ async function PageWithData({ params, searchParams }: PageProps) {
       )
     `)
     .eq("poll_id", poll.id);
+
+  const [optionsResult, userVoteResult, allVotesResult] = await Promise.all([
+    optionsPromise,
+    userVotePromise,
+    allVotesPromise,
+  ]);
+
+  const options = optionsResult.data;
+  const existingVotes = userVoteResult.data;
+  const allVotes = allVotesResult.data;
+
+  const optionLabels = options?.map((o) => o.label) ?? [];
+
+  const isCreator = user ? poll.user_id === user.id : false;
+  const isClosed = (poll.settings as any)?.closed || false;
+  const hideResultsSetting = (poll.settings as any)?.hideResults || false;
+  const resultsHidden = hideResultsSetting && !isClosed && !isCreator;
+
+  const userHasVoted = (existingVotes?.length ?? 0) > 0;
 
   // Group votes by user_id to reconstruct ballots
   const userBallots: Record<

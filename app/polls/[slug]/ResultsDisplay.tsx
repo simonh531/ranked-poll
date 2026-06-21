@@ -22,7 +22,16 @@ import {
   EyeOff,
 } from "lucide-react";
 import rankedPairsCalc, { makeRanks } from "@/utils/rankedPairsCalc";
-import VictoryGraph from "./VictoryGraph";
+import dynamic from "next/dynamic";
+
+const VictoryGraph = dynamic(() => import("./VictoryGraph"), {
+  loading: () => (
+    <div className="h-[280px] w-full flex items-center justify-center bg-slate-50/50 dark:bg-slate-950/20 border border-indigo-100/50 dark:border-slate-800/50 rounded-xl">
+      <span className="text-xs text-muted-foreground animate-pulse">Loading Victory Graph...</span>
+    </div>
+  ),
+  ssr: false,
+});
 
 interface ResultsDisplayProps {
   pollId: string;

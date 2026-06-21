@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Merriweather, Open_Sans } from "next/font/google";
+import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import AvatarFallbackIcon from "@/app/AvatarFallbackIcon";
-import Script from "next/script";
+import AdSense from "@/components/AdSense";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -14,11 +14,6 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const merriweather = Merriweather({
   subsets: ["latin"],
   variable: "--font-merriweather",
-});
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  variable: "--font-open-sans",
 });
 
 const description =
@@ -82,15 +77,10 @@ export default function RootLayout({
   return (
     <html className={cn("font-sans", inter.variable)} lang="en">
       <body
-        className={`${merriweather.variable} ${openSans.variable} antialiased min-h-screen flex flex-col relative bg-background bg-gradient-to-tr from-primary/10 via-background to-secondary/10 dark:from-slate-950 dark:via-background dark:to-secondary/5 text-foreground overflow-x-hidden`}
+        className={`${merriweather.variable} antialiased min-h-screen flex flex-col relative bg-background bg-gradient-to-tr from-primary/10 via-background to-secondary/10 dark:from-slate-950 dark:via-background dark:to-secondary/5 text-foreground overflow-x-hidden`}
       >
         <ThemeProvider>
-          <Script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6476019148864560"
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
+          <AdSense />
           {/* Ambient background decoration */}
           <div className="absolute inset-0 -z-10 h-full w-full bg-[radial-gradient(#c7d2fe_1px,transparent_1px)] dark:bg-[radial-gradient(#312e81_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-50" />
           <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-secondary/15 dark:bg-secondary/20 blur-[130px] pointer-events-none" />
@@ -103,7 +93,6 @@ export default function RootLayout({
           </ConditionalLayout>
         </ThemeProvider>
       </body>
-
     </html>
   );
 }
