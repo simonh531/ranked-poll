@@ -61,6 +61,7 @@ jobs:
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
+    needs: [unit-tests, typecheck]
     # E2E tests need environment secrets for Supabase
     # Skip if the PR is from a fork (no access to secrets)
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
