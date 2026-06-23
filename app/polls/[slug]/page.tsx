@@ -40,6 +40,9 @@ export async function generateMetadata({
   return {
     title: `${question} - Ranked Choice Poll`,
     description,
+    alternates: {
+      canonical: `/polls/${slug}`,
+    },
     openGraph: {
       title: question,
       description,
@@ -181,8 +184,47 @@ async function PageWithData({ params, searchParams }: PageProps) {
   const randomize = (poll.settings as any)?.randomize || false;
   const theme = (poll.settings as any)?.theme || "indigo";
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rankedpoll.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${baseUrl}/polls/${slug}#webpage`,
+        "url": `${baseUrl}/polls/${slug}`,
+        "name": `${poll.question} - Ranked Choice Poll`,
+        "description": description || "Cast your ranked choice vote now!",
+        "breadcrumb": {
+          "@id": `${baseUrl}/polls/${slug}#breadcrumb`
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${baseUrl}/polls/${slug}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${baseUrl}/`
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": poll.question,
+            "item": `${baseUrl}/polls/${slug}`
+          }
+        ]
+      }
+    ]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ThemeUpdater theme={theme} />
       <PollHistoryTracker slug={slug} question={poll.question} voteCount={totalVoters} />
       {showResults || (userHasVoted && !forceVote) || isClosed ? (

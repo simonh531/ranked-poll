@@ -6,11 +6,39 @@ import { Separator } from "@/components/ui/separator";
 export const metadata = {
   title: "About | Ranked Poll",
   description: "Learn how Ranked Poll and the Ranked Pairs voting method work.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rankedpoll.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": `${baseUrl}/`,
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About",
+        "item": `${baseUrl}/about`,
+      },
+    ],
+  };
+
   return (
-    <Card className="shadow-sm animate-fade-in">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Card className="shadow-sm animate-fade-in">
       <CardHeader className="pb-3">
         <CardTitle className="text-3xl font-extrabold tracking-tight">About Ranked Poll</CardTitle>
       </CardHeader>
@@ -79,5 +107,6 @@ export default function AboutPage() {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

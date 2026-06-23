@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     "ballot creator",
   ],
   alternates: {
-    canonical: "./",
+    canonical: "/",
   },
   openGraph: {
     type: "website",
