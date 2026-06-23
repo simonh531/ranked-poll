@@ -10,10 +10,11 @@ import AdSense from "@/components/AdSense";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
-
 const merriweather = Merriweather({
   subsets: ["latin"],
+  weight: ["900"],
   variable: "--font-merriweather",
+  display: "swap",
 });
 
 const description =

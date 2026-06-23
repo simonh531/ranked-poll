@@ -14,7 +14,7 @@ import CreateButton from "./CreateButton";
 import CreatePollForm from "./CreatePollForm";
 import OptionInputs from "./OptionInputs";
 import Validation from "./Validation";
-import RecentPollsHome from "@/components/RecentPollsHome";
+import RecentPollsWrapper from "@/components/RecentPollsWrapper";
 import ThemeSelector from "@/components/ThemeSelector";
 
 export const dynamic = "force-dynamic";
@@ -145,7 +145,7 @@ export default async function Page({ searchParams }: PageProps) {
           </Card>
         </CreatePollForm>
       </div>
-      <RecentPollsHome />
+      <RecentPollsWrapper />
     </div>
     </>
   );
